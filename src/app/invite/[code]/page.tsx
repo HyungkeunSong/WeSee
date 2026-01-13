@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Loader2, CheckCircle, XCircle, Heart } from 'lucide-react';
 import { createClient } from '@/lib/supabase/client';
@@ -8,14 +8,12 @@ import Link from 'next/link';
 
 type InviteStatus = 'checking' | 'joining' | 'success' | 'error' | 'already_connected' | 'not_logged_in';
 
-export const dynamic = 'force-dynamic'
-
-export default function InvitePage() {
+function InviteContent() {
   const params = useParams();
   const router = useRouter();
   const supabase = createClient();
   
-  const inviteCode = params.code as string;
+  const inviteCode = params?.code as string;
   const [status, setStatus] = useState<InviteStatus>('checking');
   const [error, setError] = useState('');
   const [partnerName, setPartnerName] = useState('');
@@ -254,5 +252,20 @@ export default function InvitePage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function InvitePage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 size={48} className="text-purple-600 animate-spin" />
+          <p className="text-zinc-600">로딩 중...</p>
+        </div>
+      </div>
+    }>
+      <InviteContent />
+    </Suspense>
   );
 }

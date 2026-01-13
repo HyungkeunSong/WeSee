@@ -1,14 +1,12 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { CoupleIcon } from '@/components/icons/couple-icon'
 
-export const dynamic = 'force-dynamic'
-
-export default function LoginPage() {
+function LoginForm() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
@@ -18,7 +16,7 @@ export default function LoginPage() {
   const supabase = createClient()
 
   // 리다이렉트 URL 가져오기
-  const redirectUrl = searchParams.get('redirect')
+  const redirectUrl = searchParams?.get('redirect')
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -121,5 +119,20 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-pink-50 via-purple-50 to-blue-50">
+        <div className="text-center">
+          <CoupleIcon size={56} className="animate-pulse mx-auto mb-4" />
+          <p className="text-zinc-600">로딩 중...</p>
+        </div>
+      </div>
+    }>
+      <LoginForm />
+    </Suspense>
   )
 }
