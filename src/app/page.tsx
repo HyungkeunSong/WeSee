@@ -207,7 +207,7 @@ export default function Home() {
   return (
     <div className="fixed inset-0 bg-white flex flex-col">
       {/* Header - 완전 고정 */}
-      <div className="flex-none bg-white border-b border-gray-100 px-4 py-4 z-50">
+      <div className="flex-none bg-white border-b border-gray-100 px-4 py-4 z-30">
         {/* 년도 표시 */}
         <div className="text-sm text-gray-500 font-medium mb-1">
           {format(currentDate, "yyyy년", { locale: ko })}
