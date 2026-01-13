@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { format, subMonths } from 'date-fns';
 import { ko } from 'date-fns/locale';
-import { PieChart, TrendingUp, TrendingDown, ChevronDown } from 'lucide-react';
+import { PieChart, TrendingUp, TrendingDown, ChevronDown, Loader2 } from 'lucide-react';
 
 interface CategoryData {
   amount: number;
@@ -132,20 +132,122 @@ export default function AnalysisPage() {
   // 초기 로드 시에만 데이터 없음 화면 표시
   if (!financialData && !isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 pb-28">
-        <div className="max-w-lg mx-auto">
-          {/* Header - Sticky 고정 및 높이 조정 */}
+      <div 
+        className="fixed inset-0 bg-gray-50 flex flex-col overscroll-none"
+        style={{ 
+          paddingTop: 'env(safe-area-inset-top)',
+          paddingBottom: 'calc(3.5rem + env(safe-area-inset-bottom))'
+        }}
+      >
+        <div className="flex-1 flex flex-col max-w-lg mx-auto w-full overflow-hidden">
+          {/* Header - flex-none으로 고정 */}
           <div 
-            className="sticky top-0 bg-white border-b border-gray-100 px-4 py-6 z-50"
-            style={{ paddingTop: 'calc(1.5rem + env(safe-area-inset-top))' }}
+            className="flex-none bg-white border-b border-gray-100 px-4 py-6 z-50"
+            style={{ paddingTop: '1.5rem' }}
           >
             <h1 className="text-3xl font-bold text-gray-900">
               소비 분석
             </h1>
           </div>
 
+          {/* 컨텐츠 - 여기만 스크롤 */}
+          <div className="flex-1 overflow-y-auto overscroll-contain relative">
+            {/* 로딩 오버레이 (업데이트 시) */}
+            {isLoading && (
+              <div className="absolute inset-0 z-10 bg-white/60 flex items-center justify-center backdrop-blur-[1px]">
+                <Loader2 className="w-8 h-8 text-gray-400 animate-spin" />
+              </div>
+            )}
+
+            {/* 월 선택 */}
+            <div className="p-4">
+              <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
+                <div ref={monthPickerRef} className="relative">
+                  <button
+                    onClick={() => setShowMonthPicker(!showMonthPicker)}
+                    className={`w-full flex items-center justify-between px-4 py-3 bg-white border-2 border-gray-200 hover:border-gray-300 transition-colors ${
+                      showMonthPicker 
+                        ? 'rounded-t-xl' 
+                        : 'rounded-xl'
+                    }`}
+                  >
+                    <span className="font-semibold text-gray-900">
+                      {format(currentDate, 'yyyy년 M월', { locale: ko })}
+                    </span>
+                    <ChevronDown
+                      className={`text-gray-500 transition-transform ${
+                        showMonthPicker ? 'rotate-180' : ''
+                      }`}
+                      size={20}
+                    />
+                  </button>
+
+                  {/* 월 선택 드롭다운 */}
+                  {showMonthPicker && (
+                    <div className="absolute left-0 right-0 top-[calc(100%-2px)] bg-white border-2 border-t border-gray-200 rounded-b-xl shadow-lg max-h-60 overflow-y-auto z-50">
+                      {availableMonths.map((month) => (
+                        <button
+                          key={month.toISOString()}
+                          onClick={() => handleMonthChange(month)}
+                          className={`w-full px-4 py-3 text-left hover:bg-gray-50 transition-colors ${
+                            format(month, 'yyyy-MM') === format(currentDate, 'yyyy-MM')
+                              ? 'bg-blue-50 text-blue-600 font-semibold'
+                              : 'text-gray-700'
+                          }`}
+                        >
+                          {format(month, 'yyyy년 M월', { locale: ko })}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* 데이터 없음 */}
+            <div className="p-8 text-center">
+              <PieChart className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+              <p className="text-gray-500 mb-2">아직 데이터가 없습니다</p>
+              <p className="text-sm text-gray-400">
+                업로드 탭에서 토스 화면을 업로드해주세요
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div 
+      className="fixed inset-0 bg-gray-50 flex flex-col overscroll-none"
+      style={{ 
+        paddingTop: 'env(safe-area-inset-top)',
+        paddingBottom: 'calc(3.5rem + env(safe-area-inset-bottom))'
+      }}
+    >
+      <div className="flex-1 flex flex-col max-w-lg mx-auto w-full overflow-hidden">
+        {/* Header - flex-none으로 고정 */}
+        <div 
+          className="flex-none bg-white border-b border-gray-100 px-4 py-6 z-50"
+          style={{ paddingTop: '1.5rem' }}
+        >
+          <h1 className="text-3xl font-bold text-gray-900">
+            소비 분석
+          </h1>
+        </div>
+
+        {/* 컨텐츠 - 여기만 스크롤 */}
+        <div className="flex-1 overflow-y-auto overscroll-contain relative">
+          {/* 로딩 오버레이 (업데이트 시) */}
+          {isLoading && (
+            <div className="absolute inset-0 z-10 bg-white/60 flex items-center justify-center backdrop-blur-[1px]">
+              <Loader2 className="w-8 h-8 text-gray-400 animate-spin" />
+            </div>
+          )}
+
           {/* 월 선택 */}
-          <div className="p-4">
+          <div className="p-4 pb-0">
             <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
               <div ref={monthPickerRef} className="relative">
                 <button
@@ -189,174 +291,104 @@ export default function AnalysisPage() {
             </div>
           </div>
 
-          {/* 데이터 없음 */}
-          <div className="p-8 text-center">
-            <PieChart className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <p className="text-gray-500 mb-2">아직 데이터가 없습니다</p>
-            <p className="text-sm text-gray-400">
-              업로드 탭에서 토스 화면을 업로드해주세요
-            </p>
+          {/* 요약 카드 */}
+          <div className="p-4 space-y-3">
+            {/* 총 지출 */}
+            <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-500 mb-1">이번 달 총 지출</p>
+                  <p className={`text-3xl font-bold text-gray-900 transition-opacity duration-300 ${
+                    isLoading ? 'opacity-30' : 'opacity-100'
+                  }`}>
+                    {formatCurrency(summary?.totalExpense || 0)}
+                  </p>
+                </div>
+                <div className="w-12 h-12 bg-red-50 rounded-full flex items-center justify-center">
+                  <TrendingDown className="text-red-500" size={24} />
+                </div>
+              </div>
+            </div>
+
+            {/* 총 수입 */}
+            <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-500 mb-1">이번 달 총 수입</p>
+                  <p className={`text-3xl font-bold text-gray-900 transition-opacity duration-300 ${
+                    isLoading ? 'opacity-30' : 'opacity-100'
+                  }`}>
+                    {formatCurrency(summary?.totalIncome || 0)}
+                  </p>
+                </div>
+                <div className="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center">
+                  <TrendingUp className="text-blue-500" size={24} />
+                </div>
+              </div>
+            </div>
+
+            {/* 순수입 */}
+            <div className={`bg-white rounded-2xl p-5 shadow-sm border ${
+              (summary?.netIncome || 0) >= 0 ? 'border-blue-100 bg-blue-50/30' : 'border-red-100 bg-red-50/30'
+            }`}>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-500 mb-1">순수입</p>
+                  <p className={`text-2xl font-bold transition-opacity duration-300 ${
+                    (summary?.netIncome || 0) >= 0 ? 'text-blue-600' : 'text-red-600'
+                  } ${isLoading ? 'opacity-30' : 'opacity-100'}`}>
+                    {(summary?.netIncome || 0) >= 0 ? '+' : ''}
+                    {formatCurrency(summary?.netIncome || 0)}
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
-    );
-  }
 
-  return (
-    <div className="min-h-screen bg-gray-50 pb-28">
-      <div className="max-w-lg mx-auto">
-        {/* Header - Sticky 고정 및 높이 조정 */}
-        <div 
-          className="sticky top-0 bg-white border-b border-gray-100 px-4 py-6 z-50"
-          style={{ paddingTop: 'calc(1.5rem + env(safe-area-inset-top))' }}
-        >
-          <h1 className="text-3xl font-bold text-gray-900">
-            소비 분석
-          </h1>
-        </div>
+          {/* 카테고리별 소비 */}
+          <div className="p-4">
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+              <div className="px-5 py-4 border-b border-gray-100">
+                <h2 className="text-lg font-bold text-gray-900">카테고리별 소비</h2>
+              </div>
 
-        {/* 월 선택 */}
-        <div className="p-4 pb-0">
-          <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
-            <div ref={monthPickerRef} className="relative">
-              <button
-                onClick={() => setShowMonthPicker(!showMonthPicker)}
-                className={`w-full flex items-center justify-between px-4 py-3 bg-white border-2 border-gray-200 hover:border-gray-300 transition-colors ${
-                  showMonthPicker 
-                    ? 'rounded-t-xl' 
-                    : 'rounded-xl'
-                }`}
-              >
-                <span className="font-semibold text-gray-900">
-                  {format(currentDate, 'yyyy년 M월', { locale: ko })}
-                </span>
-                <ChevronDown
-                  className={`text-gray-500 transition-transform ${
-                    showMonthPicker ? 'rotate-180' : ''
-                  }`}
-                  size={20}
-                />
-              </button>
-
-              {/* 월 선택 드롭다운 */}
-              {showMonthPicker && (
-                <div className="absolute left-0 right-0 top-[calc(100%-2px)] bg-white border-2 border-t border-gray-200 rounded-b-xl shadow-lg max-h-60 overflow-y-auto z-50">
-                  {availableMonths.map((month) => (
-                    <button
-                      key={month.toISOString()}
-                      onClick={() => handleMonthChange(month)}
-                      className={`w-full px-4 py-3 text-left hover:bg-gray-50 transition-colors ${
-                        format(month, 'yyyy-MM') === format(currentDate, 'yyyy-MM')
-                          ? 'bg-blue-50 text-blue-600 font-semibold'
-                          : 'text-gray-700'
-                      }`}
+              {categoryList.length === 0 ? (
+                <div className={`p-8 text-center text-gray-400 transition-opacity duration-300 ${
+                  isLoading ? 'opacity-30' : 'opacity-100'
+                }`}>
+                  소비 데이터가 없습니다
+                </div>
+              ) : (
+                <div className={`divide-y divide-gray-100 transition-opacity duration-300 ${
+                  isLoading ? 'opacity-30' : 'opacity-100'
+                }`}>
+                  {categoryList.map(([category, data]) => (
+                    <div
+                      key={category}
+                      className="px-5 py-4 hover:bg-gray-50 transition-colors"
                     >
-                      {format(month, 'yyyy년 M월', { locale: ko })}
-                    </button>
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="font-medium text-gray-900">{category}</span>
+                        <span className="text-lg font-bold text-gray-900">
+                          {formatCurrency(data.amount)}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
+                          <div
+                            className="h-full bg-blue-500 rounded-full transition-all duration-500"
+                            style={{ width: `${data.percentage}%` }}
+                          />
+                        </div>
+                        <span className="text-sm font-medium text-gray-500 w-12 text-right">
+                          {data.percentage.toFixed(1)}%
+                        </span>
+                      </div>
+                    </div>
                   ))}
                 </div>
               )}
             </div>
-          </div>
-        </div>
-
-        {/* 요약 카드 */}
-        <div className="p-4 space-y-3">
-          {/* 총 지출 */}
-          <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-500 mb-1">이번 달 총 지출</p>
-                <p className={`text-3xl font-bold text-gray-900 transition-opacity duration-300 ${
-                  isLoading ? 'opacity-30' : 'opacity-100'
-                }`}>
-                  {formatCurrency(summary?.totalExpense || 0)}
-                </p>
-              </div>
-              <div className="w-12 h-12 bg-red-50 rounded-full flex items-center justify-center">
-                <TrendingDown className="text-red-500" size={24} />
-              </div>
-            </div>
-          </div>
-
-          {/* 총 수입 */}
-          <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-500 mb-1">이번 달 총 수입</p>
-                <p className={`text-3xl font-bold text-gray-900 transition-opacity duration-300 ${
-                  isLoading ? 'opacity-30' : 'opacity-100'
-                }`}>
-                  {formatCurrency(summary?.totalIncome || 0)}
-                </p>
-              </div>
-              <div className="w-12 h-12 bg-blue-50 rounded-full flex items-center justify-center">
-                <TrendingUp className="text-blue-500" size={24} />
-              </div>
-            </div>
-          </div>
-
-          {/* 순수입 */}
-          <div className={`bg-white rounded-2xl p-5 shadow-sm border ${
-            (summary?.netIncome || 0) >= 0 ? 'border-blue-100 bg-blue-50/30' : 'border-red-100 bg-red-50/30'
-          }`}>
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-gray-500 mb-1">순수입</p>
-                <p className={`text-2xl font-bold transition-opacity duration-300 ${
-                  (summary?.netIncome || 0) >= 0 ? 'text-blue-600' : 'text-red-600'
-                } ${isLoading ? 'opacity-30' : 'opacity-100'}`}>
-                  {(summary?.netIncome || 0) >= 0 ? '+' : ''}
-                  {formatCurrency(summary?.netIncome || 0)}
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* 카테고리별 소비 */}
-        <div className="p-4">
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-            <div className="px-5 py-4 border-b border-gray-100">
-              <h2 className="text-lg font-bold text-gray-900">카테고리별 소비</h2>
-            </div>
-
-            {categoryList.length === 0 ? (
-              <div className={`p-8 text-center text-gray-400 transition-opacity duration-300 ${
-                isLoading ? 'opacity-30' : 'opacity-100'
-              }`}>
-                소비 데이터가 없습니다
-              </div>
-            ) : (
-              <div className={`divide-y divide-gray-100 transition-opacity duration-300 ${
-                isLoading ? 'opacity-30' : 'opacity-100'
-              }`}>
-                {categoryList.map(([category, data], index) => (
-                  <div
-                    key={category}
-                    className="px-5 py-4 hover:bg-gray-50 transition-colors"
-                  >
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="font-medium text-gray-900">{category}</span>
-                      <span className="text-lg font-bold text-gray-900">
-                        {formatCurrency(data.amount)}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
-                        <div
-                          className="h-full bg-blue-500 rounded-full transition-all duration-500"
-                          style={{ width: `${data.percentage}%` }}
-                        />
-                      </div>
-                      <span className="text-sm font-medium text-gray-500 w-12 text-right">
-                        {data.percentage.toFixed(1)}%
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
           </div>
         </div>
       </div>

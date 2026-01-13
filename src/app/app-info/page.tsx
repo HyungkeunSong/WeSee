@@ -6,8 +6,11 @@ import Link from 'next/link';
 export default function AppInfoPage() {
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="sticky top-0 z-10 bg-white border-b border-gray-100 px-5 py-6">
+      {/* Header - Sticky 고정 및 높이 조정 (다이나믹 아일랜드 대응) */}
+      <div 
+        className="sticky top-0 z-10 bg-white border-b border-gray-100 px-5 py-6"
+        style={{ paddingTop: 'calc(1.5rem + env(safe-area-inset-top))' }}
+      >
         <div className="flex items-center justify-between">
           <Link href="/">
             <button className="p-2 hover:bg-gray-100 rounded-lg transition-colors">

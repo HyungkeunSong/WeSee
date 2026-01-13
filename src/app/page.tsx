@@ -283,12 +283,18 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-white flex flex-col pb-28 overscroll-none">
-      {/* Header + Calendar Area - Sticky로 고정 및 높이 조정 (약 100px) */}
-      <div className="sticky top-0 z-30 bg-white shadow-sm">
+    <div 
+      className="fixed inset-0 bg-white flex flex-col overscroll-none"
+      style={{ 
+        paddingTop: 'env(safe-area-inset-top)',
+        paddingBottom: 'calc(3.5rem + env(safe-area-inset-bottom))'
+      }}
+    >
+      {/* Header + Calendar Area - flex-none으로 상단 고정 */}
+      <div className="flex-none bg-white z-30 shadow-sm">
         {/* Header */}
         <div 
-          className="flex-none bg-white px-4 py-6"
+          className="bg-white px-4 py-6"
           style={{ paddingTop: 'calc(1.5rem + env(safe-area-inset-top))' }}
         >
           {/* 년도 표시 */}
@@ -370,7 +376,7 @@ export default function Home() {
       <div 
         ref={combinedDetailRef}
         {...detailSwipeHandlers}
-        className="flex-1 bg-white overscroll-contain"
+        className="flex-1 bg-white overflow-y-auto overscroll-contain"
       >
         {selectedDayData && selectedDayData.breakdown.length > 0 ? (
           <div className="px-4 pt-4 pb-4">
