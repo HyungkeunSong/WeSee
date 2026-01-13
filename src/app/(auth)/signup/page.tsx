@@ -8,6 +8,8 @@ import { UserPlus } from 'lucide-react'
 import { CoupleIcon } from '@/components/icons/couple-icon'
 import { KeyIcon } from '@/components/icons/key-icon'
 
+export const dynamic = 'force-dynamic'
+
 export default function SignupPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')

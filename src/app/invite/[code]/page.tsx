@@ -8,6 +8,8 @@ import Link from 'next/link';
 
 type InviteStatus = 'checking' | 'joining' | 'success' | 'error' | 'already_connected' | 'not_logged_in';
 
+export const dynamic = 'force-dynamic'
+
 export default function InvitePage() {
   const params = useParams();
   const router = useRouter();
