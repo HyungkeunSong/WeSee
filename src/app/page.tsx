@@ -281,7 +281,7 @@ export default function Home() {
       {/* 상세 내역 영역 - 이 영역만 스크롤 */}
       {selectedDayData && selectedDayData.breakdown.length > 0 && (
         <div className="flex-1 overflow-y-auto bg-white">
-          <div className="px-4 pt-6 pb-24">
+          <div className="px-4 pt-6 pb-20">
           {/* 날짜 헤더 */}
           <h3 className="text-lg font-bold mb-4 text-gray-900">
             {format(selectedDayData.date, "M월 d일 EEEE", { locale: ko })}
