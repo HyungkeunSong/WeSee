@@ -205,7 +205,7 @@ export default function Home() {
   };
 
   return (
-    <div className="fixed inset-0 bg-white flex flex-col">
+    <div className="fixed inset-0 bg-white flex flex-col" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
       {/* Header - 완전 고정 */}
       <div className="flex-none bg-white border-b border-gray-100 px-4 py-4 z-30">
         {/* 년도 표시 */}

@@ -44,7 +44,7 @@ function LoginForm() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-pink-50 via-purple-50 to-blue-50 px-4 py-12">
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-pink-50 via-purple-50 to-blue-50 px-4 py-12" style={{ paddingTop: 'max(3rem, env(safe-area-inset-top))' }}>
       <div className="w-full max-w-md space-y-8">
         {/* 로고 & 타이틀 */}
         <div className="text-center space-y-3">
@@ -125,7 +125,7 @@ function LoginForm() {
 export default function LoginPage() {
   return (
     <Suspense fallback={
-      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-pink-50 via-purple-50 to-blue-50">
+      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-pink-50 via-purple-50 to-blue-50" style={{ paddingTop: 'max(3rem, env(safe-area-inset-top))' }}>
         <div className="text-center">
           <CoupleIcon size={56} className="animate-pulse mx-auto mb-4" />
           <p className="text-zinc-600">로딩 중...</p>

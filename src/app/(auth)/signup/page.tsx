@@ -151,7 +151,7 @@ function SignupForm() {
   // 커플 연결 성공 화면
   if (joinSuccess) {
     return (
-      <div className="flex min-h-screen flex-col bg-gradient-to-br from-pink-50 via-purple-50 to-blue-50">
+      <div className="flex min-h-screen flex-col bg-gradient-to-br from-pink-50 via-purple-50 to-blue-50" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
         <div className="flex-1 flex items-center justify-center px-4 py-12">
           <div className="w-full max-w-md space-y-8">
             {/* 성공 메시지 */}
@@ -200,7 +200,7 @@ function SignupForm() {
   // 초대 코드 입력 화면
   if (showJoinInput) {
     return (
-      <div className="flex min-h-screen flex-col bg-gradient-to-br from-pink-50 via-purple-50 to-blue-50">
+      <div className="flex min-h-screen flex-col bg-gradient-to-br from-pink-50 via-purple-50 to-blue-50" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
         {/* 뒤로가기 버튼 */}
         <div className="p-4">
           <button
@@ -272,7 +272,7 @@ function SignupForm() {
   // 회원가입 성공 화면
   if (showSuccess) {
     return (
-      <div className="flex min-h-screen flex-col bg-gradient-to-br from-pink-50 via-purple-50 to-blue-50">
+      <div className="flex min-h-screen flex-col bg-gradient-to-br from-pink-50 via-purple-50 to-blue-50" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
         {/* 메인 컨텐츠 */}
         <div className="flex-1 flex items-center justify-center px-4 py-12">
           <div className="w-full max-w-md space-y-8">
@@ -365,7 +365,7 @@ function SignupForm() {
   // 초대 코드 공유 화면
   if (showInviteCode) {
     return (
-      <div className="flex min-h-screen flex-col bg-gradient-to-br from-pink-50 via-purple-50 to-blue-50">
+      <div className="flex min-h-screen flex-col bg-gradient-to-br from-pink-50 via-purple-50 to-blue-50" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
         {/* 메인 컨텐츠 */}
         <div className="flex-1 flex items-center justify-center px-4 py-12">
           <div className="w-full max-w-md space-y-8">
@@ -433,7 +433,7 @@ function SignupForm() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-pink-50 via-purple-50 to-blue-50 px-4 py-12">
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-pink-50 via-purple-50 to-blue-50 px-4 py-12" style={{ paddingTop: 'max(3rem, env(safe-area-inset-top))' }}>
       <div className="w-full max-w-md space-y-8">
         {/* 로고 & 타이틀 */}
         <div className="text-center space-y-3">
@@ -546,7 +546,7 @@ function SignupForm() {
 export default function SignupPage() {
   return (
     <Suspense fallback={
-      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-pink-50 via-purple-50 to-blue-50">
+      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-pink-50 via-purple-50 to-blue-50" style={{ paddingTop: 'max(3rem, env(safe-area-inset-top))' }}>
         <div className="text-center">
           <CoupleIcon size={56} className="animate-pulse mx-auto mb-4" />
           <p className="text-zinc-600">로딩 중...</p>
