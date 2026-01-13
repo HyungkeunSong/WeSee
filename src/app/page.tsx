@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
-import { format, addMonths, subMonths, isSameMonth, endOfMonth, isAfter, isBefore, subYears } from "date-fns";
+import { format, addMonths, subMonths, addWeeks, subWeeks, isSameMonth, endOfMonth, isAfter, isBefore, subYears } from "date-fns";
 import { ko } from "date-fns/locale";
 import { useSwipeable } from "react-swipeable";
 import { Menu, ChevronDown, ChevronUp } from "lucide-react";
@@ -111,15 +111,62 @@ export default function Home() {
     }
   };
   
+  // 주 단위 이동 핸들러 (주간 뷰에서 사용)
+  const handleNextWeek = () => {
+    if (!selectedDate) return;
+    const nextWeek = addWeeks(selectedDate, 1);
+    
+    // 미래 제한 체크 (오늘 이후로는 이동 불가)
+    if (isAfter(nextWeek, today)) return;
+    
+    setSelectedDate(nextWeek);
+    setPreferredDay(nextWeek.getDate());
+    
+    // 달이 바뀌면 currentDate도 변경
+    if (!isSameMonth(nextWeek, currentDate)) {
+      setCurrentDate(nextWeek);
+    }
+  };
+
+  const handlePreviousWeek = () => {
+    if (!selectedDate) return;
+    const prevWeek = subWeeks(selectedDate, 1);
+    
+    // 2년 전 제한 체크
+    if (isBefore(prevWeek, twoYearsAgo)) return;
+    
+    setSelectedDate(prevWeek);
+    setPreferredDay(prevWeek.getDate());
+    
+    // 달이 바뀌면 currentDate도 변경
+    if (!isSameMonth(prevWeek, currentDate)) {
+      setCurrentDate(prevWeek);
+    }
+  };
+  
   // 뷰 모드 토글
   const toggleViewMode = () => {
     setCalendarViewMode(prev => prev === 'month' ? 'week' : 'month');
   };
 
-  // 캘린더 영역 스와이프 핸들러 - 좌우로 월 이동, 상하로 뷰 모드 전환
+  // 캘린더 영역 스와이프 핸들러 - 좌우로 월/주 이동, 상하로 뷰 모드 전환
   const calendarSwipeHandlers = useSwipeable({
-    onSwipedLeft: () => handleNextMonth(),
-    onSwipedRight: () => handlePreviousMonth(),
+    onSwipedLeft: () => {
+      // 주간 뷰: 다음 주로, 월간 뷰: 다음 달로
+      if (calendarViewMode === 'week') {
+        handleNextWeek();
+      } else {
+        handleNextMonth();
+      }
+    },
+    onSwipedRight: () => {
+      // 주간 뷰: 이전 주로, 월간 뷰: 이전 달로
+      if (calendarViewMode === 'week') {
+        handlePreviousWeek();
+      } else {
+        handlePreviousMonth();
+      }
+    },
     onSwipedUp: () => {
       // 위로 스와이프 = 캘린더 축소 (week 모드로)
       if (calendarViewMode === 'month') {
@@ -243,10 +290,10 @@ export default function Home() {
 
   return (
     <div 
-      className="fixed inset-0 bg-white flex flex-col" 
+      className="fixed top-0 left-0 right-0 bg-white flex flex-col" 
       style={{ 
         paddingTop: 'env(safe-area-inset-top)',
-        paddingBottom: 'calc(3.5rem + env(safe-area-inset-bottom))' // GNB 높이 확보
+        bottom: 'calc(3.5rem + env(safe-area-inset-bottom))' // GNB 위에서 끝남
       }}
     >
       {/* Header - 완전 고정 */}

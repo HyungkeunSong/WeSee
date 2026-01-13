@@ -268,13 +268,10 @@ export default function UploadPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-28">
+    <div className="min-h-screen bg-gray-50 pb-28" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
       <div className="max-w-lg mx-auto">
         {/* Header */}
-        <div 
-          className="flex-none bg-white border-b border-gray-100 px-4 pb-4 z-50"
-          style={{ paddingTop: 'calc(1rem + env(safe-area-inset-top))' }}
-        >
+        <div className="flex-none bg-white border-b border-gray-100 px-4 py-4 z-50">
           {/* 메인 제목 */}
           <div className="flex items-center justify-between">
             <h1 className="text-3xl font-bold text-gray-900">

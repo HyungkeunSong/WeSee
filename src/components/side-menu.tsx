@@ -43,9 +43,10 @@ export function SideMenu({ isOpen, onClose }: SideMenuProps) {
         className={`fixed top-0 right-0 h-full w-80 bg-white z-50 transform transition-transform duration-300 ${
           isOpen ? 'translate-x-0' : 'translate-x-full'
         }`}
+        style={{ paddingTop: 'env(safe-area-inset-top)' }}
       >
         {/* 헤더 */}
-        <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
           <h2 className="text-xl font-bold text-gray-900">메뉴</h2>
           <button
             onClick={onClose}
