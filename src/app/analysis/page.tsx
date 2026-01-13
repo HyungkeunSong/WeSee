@@ -134,10 +134,10 @@ export default function AnalysisPage() {
     return (
       <div className="min-h-screen bg-gray-50 pb-28">
         <div className="max-w-lg mx-auto">
-          {/* Header - safe-area까지 흰색 배경 확장 */}
+          {/* Header - Sticky 고정 및 높이 조정 */}
           <div 
-            className="bg-white border-b border-gray-100 px-4 py-4"
-            style={{ paddingTop: 'calc(1rem + env(safe-area-inset-top))' }}
+            className="sticky top-0 bg-white border-b border-gray-100 px-4 py-6 z-50"
+            style={{ paddingTop: 'calc(1.5rem + env(safe-area-inset-top))' }}
           >
             <h1 className="text-3xl font-bold text-gray-900">
               소비 분석
@@ -205,10 +205,10 @@ export default function AnalysisPage() {
   return (
     <div className="min-h-screen bg-gray-50 pb-28">
       <div className="max-w-lg mx-auto">
-        {/* Header - safe-area까지 흰색 배경 확장 */}
+        {/* Header - Sticky 고정 및 높이 조정 */}
         <div 
-          className="bg-white border-b border-gray-100 px-4 py-4"
-          style={{ paddingTop: 'calc(1rem + env(safe-area-inset-top))' }}
+          className="sticky top-0 bg-white border-b border-gray-100 px-4 py-6 z-50"
+          style={{ paddingTop: 'calc(1.5rem + env(safe-area-inset-top))' }}
         >
           <h1 className="text-3xl font-bold text-gray-900">
             소비 분석

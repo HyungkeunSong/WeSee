@@ -283,13 +283,13 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-white flex flex-col pb-28">
-      {/* Header + Calendar Area - Sticky로 고정 */}
+    <div className="min-h-screen bg-white flex flex-col pb-28 overscroll-none">
+      {/* Header + Calendar Area - Sticky로 고정 및 높이 조정 (약 100px) */}
       <div className="sticky top-0 z-30 bg-white shadow-sm">
         {/* Header */}
         <div 
-          className="flex-none bg-white px-4 py-4"
-          style={{ paddingTop: 'calc(1rem + env(safe-area-inset-top))' }}
+          className="flex-none bg-white px-4 py-6"
+          style={{ paddingTop: 'calc(1.5rem + env(safe-area-inset-top))' }}
         >
           {/* 년도 표시 */}
           <div className="text-sm text-gray-500 font-medium mb-1">
@@ -301,17 +301,15 @@ export default function Home() {
               {format(currentDate, "M월", { locale: ko })}
             </h1>
             <div className="flex items-center gap-4">
-              {/* 오늘 버튼 - 오늘 날짜를 보고 있으면 disabled */}
+              {/* 오늘 버튼 */}
               <button
                 onClick={() => {
                   const isViewingToday = selectedDate && format(selectedDate, "yyyy-MM-dd") === format(today, "yyyy-MM-dd");
                   if (!isTransitioning && !isViewingToday) {
-                    // 당월이면 transition 없이 날짜만 변경
                     if (isSameMonth(currentDate, today)) {
                       setSelectedDate(today);
                       setPreferredDay(today.getDate());
                     } else {
-                      // 다른 월이면 transition과 함께 이동
                       setIsTransitioning(true);
                       setTimeout(() => {
                         setCurrentDate(today);
@@ -340,7 +338,7 @@ export default function Home() {
           </div>
         </div>
 
-        {/* 캘린더 영역 - 스와이프로 뷰 모드 전환 */}
+        {/* 캘린더 영역 */}
         <div 
           {...calendarSwipeHandlers}
           className="flex-none transition-all duration-300 ease-out border-t border-gray-100"
@@ -353,14 +351,9 @@ export default function Home() {
             viewMode={calendarViewMode}
             isTransitioning={isTransitioning}
           />
-          {isLoading && (
-            <div className="absolute inset-0 bg-white/50 flex items-center justify-center">
-              <div className="text-sm text-gray-500">로딩 중...</div>
-            </div>
-          )}
         </div>
         
-        {/* 뷰 모드 전환 힌트 인디케이터 */}
+        {/* 뷰 모드 전환 버튼 */}
         <button
           onClick={toggleViewMode}
           className="w-full flex items-center justify-center py-2 text-gray-400 hover:text-gray-600 transition-colors active:bg-gray-50 focus:outline-none border-b border-gray-100"
@@ -373,11 +366,11 @@ export default function Home() {
         </button>
       </div>
 
-      {/* 상세 내역 영역 - 스와이프로 뷰 모드 전환 */}
+      {/* 상세 내역 영역 */}
       <div 
         ref={combinedDetailRef}
         {...detailSwipeHandlers}
-        className="flex-1 bg-white"
+        className="flex-1 bg-white overscroll-contain"
       >
         {selectedDayData && selectedDayData.breakdown.length > 0 ? (
           <div className="px-4 pt-4 pb-4">

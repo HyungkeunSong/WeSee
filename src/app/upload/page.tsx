@@ -270,10 +270,10 @@ export default function UploadPage() {
   return (
     <div className="min-h-screen bg-gray-50 pb-28">
       <div className="max-w-lg mx-auto">
-        {/* Header - safe-area까지 흰색 배경 확장 */}
+        {/* Header - Sticky 고정 및 높이 조정 (약 100px) */}
         <div 
-          className="flex-none bg-white border-b border-gray-100 px-4 py-4 z-50"
-          style={{ paddingTop: 'calc(1rem + env(safe-area-inset-top))' }}
+          className="sticky top-0 flex-none bg-white border-b border-gray-100 px-4 py-6 z-50"
+          style={{ paddingTop: 'calc(1.5rem + env(safe-area-inset-top))' }}
         >
           {/* 메인 제목 */}
           <div className="flex items-center justify-between">
