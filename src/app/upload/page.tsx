@@ -272,6 +272,8 @@ export default function UploadPage() {
       {/* Header - flex-none으로 고정 */}
       <div className="flex-none bg-white border-b border-gray-100 z-50" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
         <div className="px-4 py-4">
+          {/* 홈 화면과 높이를 맞추기 위한 플레이스홀더 */}
+          <div className="text-sm mb-1 opacity-0">Placeholder</div>
           <div className="flex items-center justify-between">
             <h1 className="text-3xl font-bold text-gray-900">
               데이터 업로드
