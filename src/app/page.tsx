@@ -301,7 +301,7 @@ export default function Home() {
       {/* 뷰 모드 전환 힌트 인디케이터 */}
       <button
         onClick={toggleViewMode}
-        className="flex-none flex items-center justify-center py-2 text-gray-400 hover:text-gray-600 transition-colors active:bg-gray-50"
+        className="flex-none flex items-center justify-center py-2 text-gray-400 hover:text-gray-600 transition-colors active:bg-gray-50 focus:outline-none"
       >
         {calendarViewMode === 'month' ? (
           <ChevronUp size={20} />
