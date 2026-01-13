@@ -110,7 +110,10 @@ export function SideMenu({ isOpen, onClose }: SideMenuProps) {
         </div>
 
         {/* 로그아웃 버튼 */}
-        <div className="absolute bottom-16 left-0 right-0 p-6 border-t border-gray-100 bg-white">
+        <div 
+          className="absolute left-0 right-0 p-6 border-t border-gray-100 bg-white"
+          style={{ bottom: 'calc(4rem + env(safe-area-inset-bottom))' }}
+        >
           <button
             onClick={handleLogout}
             className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-red-50 hover:bg-red-100 text-red-600 rounded-xl font-medium transition-colors"
