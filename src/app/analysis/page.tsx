@@ -121,8 +121,7 @@ export default function AnalysisPage() {
   // 공통 헤더 컴포넌트
   const Header = () => (
     <div className="flex-none bg-white border-b border-gray-100 z-50" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
-      <div className="px-4 py-4">
-        <div className="text-sm mb-1 opacity-0 text-gray-500 font-medium">Placeholder</div>
+      <div className="h-[100px] max-w-[430px] mx-auto px-4 flex flex-col justify-end pb-4">
         <h1 className="text-3xl font-bold text-gray-900">소비 분석</h1>
       </div>
     </div>
