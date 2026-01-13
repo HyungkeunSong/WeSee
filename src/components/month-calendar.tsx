@@ -14,6 +14,7 @@ interface MonthCalendarProps {
   selectedDate: Date | null;
   onDateClick: (date: Date) => void;
   viewMode?: 'month' | 'week';
+  isTransitioning?: boolean;
 }
 
 export function MonthCalendar({
@@ -22,6 +23,7 @@ export function MonthCalendar({
   selectedDate,
   onDateClick,
   viewMode = 'month',
+  isTransitioning = false,
 }: MonthCalendarProps) {
   const monthStart = startOfMonth(currentDate);
   const monthEnd = endOfMonth(currentDate);
@@ -91,12 +93,14 @@ export function MonthCalendar({
 
       {/* 캘린더 그리드 - 주별로 렌더링 */}
       <div 
-        className="transition-transform duration-300 ease-out"
+        className="transition-all duration-300 ease-out"
         style={{
           // 주간 뷰일 때 선택된 주가 맨 위로 오도록 이동
           transform: viewMode === 'week' 
             ? `translateY(-${selectedWeekIndex * weekHeight}px)` 
             : 'translateY(0)',
+          // 월 전환 시 날짜 그리드만 opacity 변경 (요일 헤더는 제외)
+          opacity: isTransitioning ? 0.5 : 1,
         }}
       >
         {weeks.map((week, weekIndex) => {

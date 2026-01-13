@@ -262,9 +262,7 @@ export default function Home() {
       {/* 캘린더 영역 - 스와이프로 뷰 모드 전환 */}
       <div 
         {...calendarSwipeHandlers}
-        className={`flex-none transition-all duration-300 ease-out border-b border-gray-100 ${
-          isTransitioning ? "opacity-50" : "opacity-100"
-        }`}
+        className="flex-none transition-all duration-300 ease-out border-b border-gray-100"
       >
         <MonthCalendar
           currentDate={currentDate}
@@ -272,6 +270,7 @@ export default function Home() {
           selectedDate={selectedDate}
           onDateClick={handleDateClick}
           viewMode={calendarViewMode}
+          isTransitioning={isTransitioning}
         />
         {isLoading && (
           <div className="absolute inset-0 bg-white/50 flex items-center justify-center">
