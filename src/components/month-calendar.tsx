@@ -77,12 +77,12 @@ export function MonthCalendar({
         overflow: 'hidden',
       }}
     >
-      {/* 요일 헤더 */}
-      <div className="grid grid-cols-7 mb-2">
+      {/* 요일 헤더 - 배경색으로 날짜가 뒤에서 보이지 않도록 */}
+      <div className="grid grid-cols-7 mb-2 bg-white relative z-10">
         {["일", "월", "화", "수", "목", "금", "토"].map((day) => (
           <div
             key={day}
-            className="text-center py-2 text-sm font-medium text-gray-500"
+            className="text-center py-2 text-sm font-medium text-gray-500 bg-white"
           >
             {day}
           </div>
