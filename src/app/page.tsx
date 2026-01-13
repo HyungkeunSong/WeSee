@@ -382,7 +382,7 @@ export default function Home() {
           </div>
         ) : (
           <div className="flex-1 flex items-center justify-center text-gray-400 py-12">
-            <p>{selectedDate ? format(selectedDate, "M월 d일", { locale: ko }) + "에는 내역이 없습니다" : "날짜를 선택해주세요"}</p>
+            <p>{selectedDate ? format(selectedDate, "M월 d일", { locale: ko }) + "에는 내역이 없어요" : "날짜를 선택해주세요"}</p>
           </div>
         )}
       </div>
