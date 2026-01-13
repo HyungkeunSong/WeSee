@@ -58,10 +58,11 @@ export function MonthCalendar({
 
   return (
     <div 
-      className="px-4 overflow-hidden transition-all duration-300 ease-out"
+      className="px-4 transition-all duration-300 ease-out"
       style={{
         // 주간 뷰: 요일 헤더 + 1줄, 월간 뷰: 요일 헤더 + N줄
-        maxHeight: viewMode === 'week' ? '120px' : '400px',
+        maxHeight: viewMode === 'week' ? '130px' : '400px',
+        overflow: 'hidden',
       }}
     >
       {/* 요일 헤더 */}
@@ -76,8 +77,8 @@ export function MonthCalendar({
         ))}
       </div>
 
-      {/* 캘린더 그리드 */}
-      <div className="grid grid-cols-7 gap-y-2 pb-4">
+      {/* 캘린더 그리드 - 선택 효과가 잘리지 않도록 패딩 추가 */}
+      <div className="grid grid-cols-7 gap-y-2 pb-6 -mx-1 px-1">
         {/* 빈 셀 (월/주 시작 전) */}
         {Array.from({ length: emptySlots }).map((_, index) => (
           <div key={`empty-${index}`} />
