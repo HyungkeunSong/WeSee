@@ -1,24 +1,22 @@
-<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <!-- 배경 -->
-  <rect width="64" height="64" rx="12" fill="url(#bgGradient)"/>
+<svg width="180" height="180" viewBox="0 0 180 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- 배경 그라디언트 -->
+  <rect width="180" height="180" rx="40" fill="url(#bgGradient)"/>
   
-  <!-- 여성 (왼쪽) -->
-  <circle cx="22" cy="22" r="7" fill="#FFFFFF"/>
-  <path d="M22 31 C18 31, 13 33, 13 38 L13 48 C13 49.5, 14.5 51, 16 51 L28 51 C29.5 51, 31 49.5, 31 48 L31 38 C31 33, 26 31, 22 31 Z" fill="#FFFFFF"/>
+  <!-- 왼쪽 원 (투명한 흰색) -->
+  <circle cx="70" cy="90" r="45" fill="#FFFFFF" opacity="0.95"/>
   
-  <!-- 남성 (오른쪽) -->
-  <circle cx="42" cy="22" r="7" fill="#FFFFFF"/>
-  <path d="M42 31 C38 31, 33 33, 33 38 L33 48 C33 49.5, 34.5 51, 36 51 L48 51 C49.5 51, 51 49.5, 51 48 L51 38 C51 33, 46 31, 42 31 Z" fill="#FFFFFF"/>
+  <!-- 오른쪽 원 (투명한 흰색) - 왼쪽 원과 겹침 -->
+  <circle cx="110" cy="90" r="45" fill="#FFFFFF" opacity="0.95"/>
   
-  <!-- 하트 (중앙) -->
-  <path d="M32 27 C30 24, 26 24, 24 26 C22 28, 22 31, 24 33 L32 40 L40 33 C42 31, 42 28, 40 26 C38 24, 34 24, 32 27 Z" fill="#FF4B7A" opacity="0.95"/>
+  <!-- 중앙 겹치는 영역 강조 (더 밝은 흰색) -->
+  <ellipse cx="90" cy="90" rx="25" ry="45" fill="#FFFFFF" opacity="0.3"/>
   
-  <!-- 그라디언트 정의 -->
+  <!-- 그라디언트 정의: 따뜻한 코랄에서 피치톤으로 -->
   <defs>
     <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#EC4899"/>
-      <stop offset="50%" stop-color="#A855F7"/>
-      <stop offset="100%" stop-color="#3B82F6"/>
+      <stop offset="0%" stop-color="#FF6B9D"/>
+      <stop offset="50%" stop-color="#FFA07A"/>
+      <stop offset="100%" stop-color="#FFB6A3"/>
     </linearGradient>
   </defs>
 </svg>

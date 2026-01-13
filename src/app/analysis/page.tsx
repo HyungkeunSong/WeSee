@@ -132,10 +132,13 @@ export default function AnalysisPage() {
   // 초기 로드 시에만 데이터 없음 화면 표시
   if (!financialData && !isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 pb-28" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
+      <div className="min-h-screen bg-gray-50 pb-28">
         <div className="max-w-lg mx-auto">
-          {/* Header */}
-          <div className="bg-white border-b border-gray-100 px-4 py-4">
+          {/* Header - safe-area까지 흰색 배경 확장 */}
+          <div 
+            className="bg-white border-b border-gray-100 px-4 py-4"
+            style={{ paddingTop: 'calc(1rem + env(safe-area-inset-top))' }}
+          >
             <h1 className="text-3xl font-bold text-gray-900">
               소비 분석
             </h1>
@@ -200,10 +203,13 @@ export default function AnalysisPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-28" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
+    <div className="min-h-screen bg-gray-50 pb-28">
       <div className="max-w-lg mx-auto">
-        {/* Header */}
-        <div className="bg-white border-b border-gray-100 px-4 py-4">
+        {/* Header - safe-area까지 흰색 배경 확장 */}
+        <div 
+          className="bg-white border-b border-gray-100 px-4 py-4"
+          style={{ paddingTop: 'calc(1rem + env(safe-area-inset-top))' }}
+        >
           <h1 className="text-3xl font-bold text-gray-900">
             소비 분석
           </h1>

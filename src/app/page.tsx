@@ -187,20 +187,14 @@ export default function Home() {
   // 디테일뷰 스와이프 핸들러 - 스크롤이 맨 위일 때만 뷰 모드 전환
   const detailSwipeHandlersRaw = useSwipeable({
     onSwipedUp: () => {
-      const el = detailRef.current;
-      const scrollTop = el?.scrollTop ?? 0;
-      
-      // 스크롤이 맨 위에 있을 때만 토글
-      if (scrollTop < 5) {
-        toggleViewMode();
+      // 위로 스와이프: 월간 모드일 때 주간 모드로 축소 (디테일뷰 확장 의도)
+      if (calendarViewMode === 'month') {
+        setCalendarViewMode('week');
       }
     },
     onSwipedDown: () => {
-      const el = detailRef.current;
-      const scrollTop = el?.scrollTop ?? 0;
-      
-      // 주간 모드이고 스크롤이 맨 위에 있을 때 월간으로 확장
-      if (scrollTop < 5 && calendarViewMode === 'week') {
+      // 아래로 스와이프: 주간 모드일 때 월간 모드로 확장 (디테일뷰 축소 의도)
+      if (calendarViewMode === 'week') {
         setCalendarViewMode('month');
       }
     },
@@ -289,101 +283,101 @@ export default function Home() {
   };
 
   return (
-    <div 
-      className="fixed top-0 left-0 right-0 bg-white flex flex-col" 
-      style={{ 
-        paddingTop: 'env(safe-area-inset-top)',
-        bottom: 'calc(3.5rem + env(safe-area-inset-bottom))' // GNB 위에서 끝남
-      }}
-    >
-      {/* Header - 완전 고정 */}
-      <div className="flex-none bg-white border-b border-gray-100 px-4 py-4 z-30">
-        {/* 년도 표시 */}
-        <div className="text-sm text-gray-500 font-medium mb-1">
-          {format(currentDate, "yyyy년", { locale: ko })}
-        </div>
-        {/* 월 표시 + 오늘 버튼 + 설정 아이콘 */}
-        <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold text-gray-900">
-            {format(currentDate, "M월", { locale: ko })}
-          </h1>
-          <div className="flex items-center gap-4">
-            {/* 오늘 버튼 - 오늘 날짜를 보고 있으면 disabled */}
-            <button
-              onClick={() => {
-                const isViewingToday = selectedDate && format(selectedDate, "yyyy-MM-dd") === format(today, "yyyy-MM-dd");
-                if (!isTransitioning && !isViewingToday) {
-                  // 당월이면 transition 없이 날짜만 변경
-                  if (isSameMonth(currentDate, today)) {
-                    setSelectedDate(today);
-                    setPreferredDay(today.getDate());
-                  } else {
-                    // 다른 월이면 transition과 함께 이동
-                    setIsTransitioning(true);
-                    setTimeout(() => {
-                      setCurrentDate(today);
+    <div className="min-h-screen bg-white flex flex-col pb-28">
+      {/* Header + Calendar Area - Sticky로 고정 */}
+      <div className="sticky top-0 z-30 bg-white shadow-sm">
+        {/* Header */}
+        <div 
+          className="flex-none bg-white px-4 py-4"
+          style={{ paddingTop: 'calc(1rem + env(safe-area-inset-top))' }}
+        >
+          {/* 년도 표시 */}
+          <div className="text-sm text-gray-500 font-medium mb-1">
+            {format(currentDate, "yyyy년", { locale: ko })}
+          </div>
+          {/* 월 표시 + 오늘 버튼 + 설정 아이콘 */}
+          <div className="flex items-center justify-between">
+            <h1 className="text-3xl font-bold text-gray-900">
+              {format(currentDate, "M월", { locale: ko })}
+            </h1>
+            <div className="flex items-center gap-4">
+              {/* 오늘 버튼 - 오늘 날짜를 보고 있으면 disabled */}
+              <button
+                onClick={() => {
+                  const isViewingToday = selectedDate && format(selectedDate, "yyyy-MM-dd") === format(today, "yyyy-MM-dd");
+                  if (!isTransitioning && !isViewingToday) {
+                    // 당월이면 transition 없이 날짜만 변경
+                    if (isSameMonth(currentDate, today)) {
+                      setSelectedDate(today);
                       setPreferredDay(today.getDate());
-                      setIsTransitioning(false);
-                    }, 150);
+                    } else {
+                      // 다른 월이면 transition과 함께 이동
+                      setIsTransitioning(true);
+                      setTimeout(() => {
+                        setCurrentDate(today);
+                        setPreferredDay(today.getDate());
+                        setIsTransitioning(false);
+                      }, 150);
+                    }
                   }
-                }
-              }}
-              disabled={selectedDate ? format(selectedDate, "yyyy-MM-dd") === format(today, "yyyy-MM-dd") : false}
-              className={`text-sm font-semibold transition-colors ${
-                selectedDate && format(selectedDate, "yyyy-MM-dd") === format(today, "yyyy-MM-dd")
-                  ? "text-gray-300 cursor-not-allowed"
-                  : "text-gray-900 hover:text-gray-600"
-              }`}
-            >
-              오늘
-            </button>
-            <button 
-              onClick={() => setIsSideMenuOpen(true)}
-              className="p-2.5 hover:bg-gray-50 rounded-lg transition-all active:scale-95"
-            >
-              <Menu size={24} className="text-gray-400" strokeWidth={2} />
-            </button>
+                }}
+                disabled={selectedDate ? format(selectedDate, "yyyy-MM-dd") === format(today, "yyyy-MM-dd") : false}
+                className={`text-sm font-semibold transition-colors ${
+                  selectedDate && format(selectedDate, "yyyy-MM-dd") === format(today, "yyyy-MM-dd")
+                    ? "text-gray-300 cursor-not-allowed"
+                    : "text-gray-900 hover:text-gray-600"
+                }`}
+              >
+                오늘
+              </button>
+              <button 
+                onClick={() => setIsSideMenuOpen(true)}
+                className="p-2.5 hover:bg-gray-50 rounded-lg transition-all active:scale-95"
+              >
+                <Menu size={24} className="text-gray-400" strokeWidth={2} />
+              </button>
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* 캘린더 영역 - 스와이프로 뷰 모드 전환 */}
-      <div 
-        {...calendarSwipeHandlers}
-        className="flex-none transition-all duration-300 ease-out border-b border-gray-100"
-      >
-        <MonthCalendar
-          currentDate={currentDate}
-          data={getDayDataMap()}
-          selectedDate={selectedDate}
-          onDateClick={handleDateClick}
-          viewMode={calendarViewMode}
-          isTransitioning={isTransitioning}
-        />
-        {isLoading && (
-          <div className="absolute inset-0 bg-white/50 flex items-center justify-center">
-            <div className="text-sm text-gray-500">로딩 중...</div>
-          </div>
-        )}
+        {/* 캘린더 영역 - 스와이프로 뷰 모드 전환 */}
+        <div 
+          {...calendarSwipeHandlers}
+          className="flex-none transition-all duration-300 ease-out border-t border-gray-100"
+        >
+          <MonthCalendar
+            currentDate={currentDate}
+            data={getDayDataMap()}
+            selectedDate={selectedDate}
+            onDateClick={handleDateClick}
+            viewMode={calendarViewMode}
+            isTransitioning={isTransitioning}
+          />
+          {isLoading && (
+            <div className="absolute inset-0 bg-white/50 flex items-center justify-center">
+              <div className="text-sm text-gray-500">로딩 중...</div>
+            </div>
+          )}
+        </div>
+        
+        {/* 뷰 모드 전환 힌트 인디케이터 */}
+        <button
+          onClick={toggleViewMode}
+          className="w-full flex items-center justify-center py-2 text-gray-400 hover:text-gray-600 transition-colors active:bg-gray-50 focus:outline-none border-b border-gray-100"
+        >
+          {calendarViewMode === 'month' ? (
+            <ChevronUp size={20} />
+          ) : (
+            <ChevronDown size={20} />
+          )}
+        </button>
       </div>
-      
-      {/* 뷰 모드 전환 힌트 인디케이터 */}
-      <button
-        onClick={toggleViewMode}
-        className="flex-none flex items-center justify-center py-2 text-gray-400 hover:text-gray-600 transition-colors active:bg-gray-50 focus:outline-none"
-      >
-        {calendarViewMode === 'month' ? (
-          <ChevronUp size={20} />
-        ) : (
-          <ChevronDown size={20} />
-        )}
-      </button>
 
       {/* 상세 내역 영역 - 스와이프로 뷰 모드 전환 */}
       <div 
         ref={combinedDetailRef}
         {...detailSwipeHandlers}
-        className="flex-1 overflow-y-auto bg-white"
+        className="flex-1 bg-white"
       >
         {selectedDayData && selectedDayData.breakdown.length > 0 ? (
           <div className="px-4 pt-4 pb-4">
