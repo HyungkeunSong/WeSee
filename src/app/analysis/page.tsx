@@ -132,26 +132,19 @@ export default function AnalysisPage() {
   // 초기 로드 시에만 데이터 없음 화면 표시
   if (!financialData && !isLoading) {
     return (
-      <div 
-        className="fixed inset-0 bg-gray-50 flex flex-col overscroll-none"
-        style={{ 
-          paddingTop: 'env(safe-area-inset-top)',
-          paddingBottom: 'calc(3.5rem + env(safe-area-inset-bottom))'
-        }}
-      >
-        <div className="flex-1 flex flex-col max-w-lg mx-auto w-full overflow-hidden">
-          {/* Header - flex-none으로 고정 */}
-          <div 
-            className="flex-none bg-white border-b border-gray-100 px-4 py-6 z-50"
-            style={{ paddingTop: '1.5rem' }}
-          >
+      <div className="fixed inset-0 bg-white flex flex-col overscroll-none">
+        {/* Header - flex-none으로 고정 */}
+        <div className="flex-none bg-white border-b border-gray-100 z-50" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
+          <div className="px-4 py-4">
             <h1 className="text-3xl font-bold text-gray-900">
               소비 분석
             </h1>
           </div>
+        </div>
 
-          {/* 컨텐츠 - 여기만 스크롤 */}
-          <div className="flex-1 overflow-y-auto overscroll-contain relative">
+        {/* 컨텐츠 - 여기만 스크롤 */}
+        <div className="flex-1 overflow-y-auto bg-gray-50 overscroll-contain relative" style={{ paddingBottom: 'calc(3.5rem + env(safe-area-inset-bottom))' }}>
+          <div className="max-w-lg mx-auto w-full">
             {/* 로딩 오버레이 (업데이트 시) */}
             {isLoading && (
               <div className="absolute inset-0 z-10 bg-white/60 flex items-center justify-center backdrop-blur-[1px]">
@@ -219,26 +212,19 @@ export default function AnalysisPage() {
   }
 
   return (
-    <div 
-      className="fixed inset-0 bg-gray-50 flex flex-col overscroll-none"
-      style={{ 
-        paddingTop: 'env(safe-area-inset-top)',
-        paddingBottom: 'calc(3.5rem + env(safe-area-inset-bottom))'
-      }}
-    >
-      <div className="flex-1 flex flex-col max-w-lg mx-auto w-full overflow-hidden">
-        {/* Header - flex-none으로 고정 */}
-        <div 
-          className="flex-none bg-white border-b border-gray-100 px-4 py-6 z-50"
-          style={{ paddingTop: '1.5rem' }}
-        >
+    <div className="fixed inset-0 bg-white flex flex-col overscroll-none">
+      {/* Header - flex-none으로 고정 */}
+      <div className="flex-none bg-white border-b border-gray-100 z-50" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
+        <div className="px-4 py-4">
           <h1 className="text-3xl font-bold text-gray-900">
             소비 분석
           </h1>
         </div>
+      </div>
 
-        {/* 컨텐츠 - 여기만 스크롤 */}
-        <div className="flex-1 overflow-y-auto overscroll-contain relative">
+      {/* 컨텐츠 - 여기만 스크롤 */}
+      <div className="flex-1 overflow-y-auto bg-gray-50 overscroll-contain relative" style={{ paddingBottom: 'calc(3.5rem + env(safe-area-inset-bottom))' }}>
+        <div className="max-w-lg mx-auto w-full">
           {/* 로딩 오버레이 (업데이트 시) */}
           {isLoading && (
             <div className="absolute inset-0 z-10 bg-white/60 flex items-center justify-center backdrop-blur-[1px]">

@@ -283,20 +283,11 @@ export default function Home() {
   };
 
   return (
-    <div 
-      className="fixed inset-0 bg-white flex flex-col overscroll-none"
-      style={{ 
-        paddingTop: 'env(safe-area-inset-top)',
-        paddingBottom: 'calc(3.5rem + env(safe-area-inset-bottom))'
-      }}
-    >
+    <div className="fixed inset-0 bg-white flex flex-col overscroll-none">
       {/* Header + Calendar Area - flex-none으로 상단 고정 */}
-      <div className="flex-none bg-white z-30 shadow-sm">
+      <div className="flex-none bg-white z-30 shadow-sm" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
         {/* Header */}
-        <div 
-          className="bg-white px-4 py-6"
-          style={{ paddingTop: 'calc(1.5rem + env(safe-area-inset-top))' }}
-        >
+        <div className="bg-white px-4 py-4">
           {/* 년도 표시 */}
           <div className="text-sm text-gray-500 font-medium mb-1">
             {format(currentDate, "yyyy년", { locale: ko })}
@@ -372,11 +363,12 @@ export default function Home() {
         </button>
       </div>
 
-      {/* 상세 내역 영역 */}
+      {/* 상세 내역 영역 - 하단 GNB 높이만큼 패딩 확보 */}
       <div 
         ref={combinedDetailRef}
         {...detailSwipeHandlers}
         className="flex-1 bg-white overflow-y-auto overscroll-contain"
+        style={{ paddingBottom: 'calc(3.5rem + env(safe-area-inset-bottom))' }}
       >
         {selectedDayData && selectedDayData.breakdown.length > 0 ? (
           <div className="px-4 pt-4 pb-4">

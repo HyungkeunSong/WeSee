@@ -268,29 +268,21 @@ export default function UploadPage() {
   };
 
   return (
-    <div 
-      className="fixed inset-0 bg-gray-50 flex flex-col overscroll-none"
-      style={{ 
-        paddingTop: 'env(safe-area-inset-top)',
-        paddingBottom: 'calc(3.5rem + env(safe-area-inset-bottom))'
-      }}
-    >
-      <div className="flex-1 flex flex-col max-w-lg mx-auto w-full overflow-hidden">
-        {/* Header - flex-none으로 고정 */}
-        <div 
-          className="flex-none bg-white border-b border-gray-100 px-4 py-6 z-50"
-          style={{ paddingTop: '1.5rem' }}
-        >
-          {/* 메인 제목 */}
+    <div className="fixed inset-0 bg-white flex flex-col overscroll-none">
+      {/* Header - flex-none으로 고정 */}
+      <div className="flex-none bg-white border-b border-gray-100 z-50" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
+        <div className="px-4 py-4">
           <div className="flex items-center justify-between">
             <h1 className="text-3xl font-bold text-gray-900">
               데이터 업로드
             </h1>
           </div>
         </div>
+      </div>
 
-        {/* 컨텐츠 - 여기만 스크롤 */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-4 overscroll-contain">
+      {/* 컨텐츠 - 여기만 스크롤 */}
+      <div className="flex-1 overflow-y-auto bg-gray-50 p-4 space-y-4 overscroll-contain" style={{ paddingBottom: 'calc(3.5rem + env(safe-area-inset-bottom))' }}>
+        <div className="max-w-lg mx-auto w-full space-y-4">
           {/* 월 선택 */}
           <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
             <div ref={monthPickerRef} className="relative">
