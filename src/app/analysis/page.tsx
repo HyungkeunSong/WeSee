@@ -135,7 +135,10 @@ export default function AnalysisPage() {
       <div className="min-h-screen bg-gray-50 pb-28">
         <div className="max-w-lg mx-auto">
           {/* Header */}
-          <div className="bg-white border-b border-gray-100 px-4 py-8">
+          <div 
+            className="bg-white border-b border-gray-100 px-4 pb-4"
+            style={{ paddingTop: 'calc(1rem + env(safe-area-inset-top))' }}
+          >
             <h1 className="text-3xl font-bold text-gray-900">
               소비 분석
             </h1>
@@ -203,7 +206,10 @@ export default function AnalysisPage() {
     <div className="min-h-screen bg-gray-50 pb-28">
       <div className="max-w-lg mx-auto">
         {/* Header */}
-        <div className="bg-white border-b border-gray-100 px-4 py-8">
+        <div 
+          className="bg-white border-b border-gray-100 px-4 pb-4"
+          style={{ paddingTop: 'calc(1rem + env(safe-area-inset-top))' }}
+        >
           <h1 className="text-3xl font-bold text-gray-900">
             소비 분석
           </h1>
