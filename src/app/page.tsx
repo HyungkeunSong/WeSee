@@ -4,8 +4,7 @@ import { useState, useEffect } from "react";
 import { format, addMonths, subMonths, isSameMonth, endOfMonth, isAfter, isBefore, subYears } from "date-fns";
 import { ko } from "date-fns/locale";
 import { useSwipeable } from "react-swipeable";
-import { Menu } from "lucide-react";
-import Link from "next/link";
+import { Menu, ChevronDown, ChevronUp } from "lucide-react";
 import { MonthCalendar } from "@/components/month-calendar";
 import { SideMenu } from "@/components/side-menu";
 import { useFinancialData } from "@/hooks/useFinancialData";
@@ -38,6 +37,9 @@ export default function Home() {
   const [preferredDay, setPreferredDay] = useState<number>(today.getDate()); // 사용자가 선호하는 일자
   const [isInitialized, setIsInitialized] = useState(false);
   const [isSideMenuOpen, setIsSideMenuOpen] = useState(false);
+  
+  // 캘린더 뷰 모드: 'month' | 'week'
+  const [calendarViewMode, setCalendarViewMode] = useState<'month' | 'week'>('month');
 
   // React Query로 재무 데이터 로드 (캐싱 + prefetching 자동 처리)
   const { data: financialData, isLoading } = useFinancialData(currentDate);
@@ -105,33 +107,51 @@ export default function Home() {
       }, 150);
     }
   };
-
-  // 스와이프 핸들러
-  const swipeHandlers = useSwipeable({
-    onSwipedLeft: () => handleNextMonth(), // 왼쪽으로 스와이프 = 다음 달
-    onSwipedRight: () => handlePreviousMonth(), // 오른쪽으로 스와이프 = 이전 달
-    trackMouse: true, // 마우스 드래그도 감지 (데스크톱 테스트용)
-    preventScrollOnSwipe: true,
-  });
-
-  // 휠 스크롤 핸들러 (상하 스크롤)
-  const [lastScrollTime, setLastScrollTime] = useState(0);
-  const handleWheel = (e: React.WheelEvent) => {
-    const now = Date.now();
-    // 500ms 디바운싱 - 너무 빠르게 월이 바뀌는 것을 방지
-    if (now - lastScrollTime < 500) return;
-    
-    // deltaY > 0: 아래로 스크롤 = 이전 달
-    // deltaY < 0: 위로 스크롤 = 다음 달
-    if (Math.abs(e.deltaY) > 50) { // 최소 스크롤 임계값 증가
-      setLastScrollTime(now);
-      if (e.deltaY > 0) {
-        handlePreviousMonth();
-      } else {
-        handleNextMonth();
-      }
-    }
+  
+  // 뷰 모드 토글
+  const toggleViewMode = () => {
+    setCalendarViewMode(prev => prev === 'month' ? 'week' : 'month');
   };
+
+  // 캘린더 영역 스와이프 핸들러 - 좌우로 월 이동, 상하로 뷰 모드 전환
+  const calendarSwipeHandlers = useSwipeable({
+    onSwipedLeft: () => handleNextMonth(),
+    onSwipedRight: () => handlePreviousMonth(),
+    onSwipedUp: () => {
+      // 위로 스와이프 = 캘린더 축소 (week 모드로)
+      if (calendarViewMode === 'month') {
+        setCalendarViewMode('week');
+      }
+    },
+    onSwipedDown: () => {
+      // 아래로 스와이프 = 캘린더 확장 (month 모드로)
+      if (calendarViewMode === 'week') {
+        setCalendarViewMode('month');
+      }
+    },
+    trackMouse: true,
+    preventScrollOnSwipe: true,
+    delta: 30, // 최소 스와이프 거리
+  });
+  
+  // 디테일 영역 스와이프 핸들러 - 위로 스와이프하면 캘린더 축소
+  const detailSwipeHandlers = useSwipeable({
+    onSwipedUp: () => {
+      // 위로 스와이프 = 디테일 뷰 확장 의도 = 캘린더 축소
+      if (calendarViewMode === 'month') {
+        setCalendarViewMode('week');
+      }
+    },
+    onSwipedDown: () => {
+      // 아래로 스와이프 = 캘린더 확장
+      if (calendarViewMode === 'week') {
+        setCalendarViewMode('month');
+      }
+    },
+    trackMouse: false,
+    preventScrollOnSwipe: false,
+    delta: 50, // 디테일에서는 좀 더 큰 제스처 필요
+  });
 
   // 선택된 날짜의 상세 데이터 가져오기
   const getSelectedDayData = () => {
@@ -257,11 +277,10 @@ export default function Home() {
         </div>
       </div>
 
-      {/* 캘린더 영역 - 완전 고정, 스크롤 없음 */}
+      {/* 캘린더 영역 - 스와이프로 뷰 모드 전환 */}
       <div 
-        {...swipeHandlers}
-        onWheel={handleWheel}
-        className={`flex-none transition-opacity duration-150 border-b border-gray-100 ${
+        {...calendarSwipeHandlers}
+        className={`flex-none transition-all duration-300 ease-out border-b border-gray-100 ${
           isTransitioning ? "opacity-50" : "opacity-100"
         }`}
       >
@@ -270,6 +289,7 @@ export default function Home() {
           data={getDayDataMap()}
           selectedDate={selectedDate}
           onDateClick={handleDateClick}
+          viewMode={calendarViewMode}
         />
         {isLoading && (
           <div className="absolute inset-0 bg-white/50 flex items-center justify-center">
@@ -277,76 +297,95 @@ export default function Home() {
           </div>
         )}
       </div>
+      
+      {/* 뷰 모드 전환 힌트 인디케이터 */}
+      <button
+        onClick={toggleViewMode}
+        className="flex-none flex items-center justify-center py-2 text-gray-400 hover:text-gray-600 transition-colors active:bg-gray-50"
+      >
+        {calendarViewMode === 'month' ? (
+          <ChevronUp size={20} className="animate-bounce" />
+        ) : (
+          <ChevronDown size={20} className="animate-bounce" />
+        )}
+      </button>
 
-      {/* 상세 내역 영역 - 이 영역만 스크롤 */}
-      {selectedDayData && selectedDayData.breakdown.length > 0 && (
-        <div className="flex-1 overflow-y-auto bg-white">
-          <div className="px-4 pt-6 pb-20">
-          {/* 날짜 헤더 */}
-          <h3 className="text-lg font-bold mb-4 text-gray-900">
-            {format(selectedDayData.date, "M월 d일 EEEE", { locale: ko })}
-          </h3>
+      {/* 상세 내역 영역 - 스와이프로 캘린더 축소/확장 */}
+      <div 
+        {...detailSwipeHandlers}
+        className="flex-1 overflow-y-auto bg-white"
+      >
+        {selectedDayData && selectedDayData.breakdown.length > 0 ? (
+          <div className="px-4 pt-4 pb-20">
+            {/* 날짜 헤더 */}
+            <h3 className="text-lg font-bold mb-4 text-gray-900">
+              {format(selectedDayData.date, "M월 d일 EEEE", { locale: ko })}
+            </h3>
 
-          {/* 거래 목록 - 카드형 */}
-          <div className="space-y-3">
-            {selectedDayData.breakdown.map((transaction, index) => {
-              // 이니셜 추출 (첫 글자)
-              const initial = transaction.person.charAt(0);
-              // 수입/지출에 따른 아바타 배경색 (토스 색상)
-              const avatarBg = transaction.type === "income" 
-                ? "bg-toss-blue-light" 
-                : "bg-toss-red-light";
-              const avatarText = transaction.type === "income"
-                ? "text-toss-blue-dark"
-                : "text-toss-red-dark";
-              
-              return (
-                <div 
-                  key={index} 
-                  className="bg-white rounded-xl p-4 shadow-md border border-gray-100 flex items-center gap-3"
-                >
-                  {/* 아바타 */}
-                  <div className={`w-10 h-10 rounded-full ${avatarBg} ${avatarText} flex items-center justify-center font-semibold text-sm flex-shrink-0 overflow-hidden`}>
-                    {transaction.avatarUrl ? (
-                      <img
-                        src={transaction.avatarUrl}
-                        alt={transaction.person}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      initial
-                    )}
-                  </div>
-
-                  {/* 정보 */}
-                  <div className="flex-1 flex items-center justify-between">
-                    {/* 왼쪽: 이름 + 타입 */}
-                    <div>
-                      <div className="text-sm font-semibold text-gray-900">
-                        {transaction.person}
-                      </div>
-                      <div className="text-xs text-gray-500 mt-0.5">
-                        {transaction.type === "income" ? "수입" : "지출"}
-                      </div>
+            {/* 거래 목록 - 카드형 */}
+            <div className="space-y-3">
+              {selectedDayData.breakdown.map((transaction, index) => {
+                // 이니셜 추출 (첫 글자)
+                const initial = transaction.person.charAt(0);
+                // 수입/지출에 따른 아바타 배경색 (토스 색상)
+                const avatarBg = transaction.type === "income" 
+                  ? "bg-toss-blue-light" 
+                  : "bg-toss-red-light";
+                const avatarText = transaction.type === "income"
+                  ? "text-toss-blue-dark"
+                  : "text-toss-red-dark";
+                
+                return (
+                  <div 
+                    key={index} 
+                    className="bg-white rounded-xl p-4 shadow-md border border-gray-100 flex items-center gap-3"
+                  >
+                    {/* 아바타 */}
+                    <div className={`w-10 h-10 rounded-full ${avatarBg} ${avatarText} flex items-center justify-center font-semibold text-sm flex-shrink-0 overflow-hidden`}>
+                      {transaction.avatarUrl ? (
+                        <img
+                          src={transaction.avatarUrl}
+                          alt={transaction.person}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        initial
+                      )}
                     </div>
 
-                    {/* 오른쪽: 금액 */}
-                    <div
-                      className={`text-lg font-bold ${
-                        transaction.type === "income" ? "text-toss-blue" : "text-toss-red"
-                      }`}
-                    >
-                      {transaction.type === "income" ? "+" : "-"}
-                      {transaction.amount.toLocaleString()}원
+                    {/* 정보 */}
+                    <div className="flex-1 flex items-center justify-between">
+                      {/* 왼쪽: 이름 + 타입 */}
+                      <div>
+                        <div className="text-sm font-semibold text-gray-900">
+                          {transaction.person}
+                        </div>
+                        <div className="text-xs text-gray-500 mt-0.5">
+                          {transaction.type === "income" ? "수입" : "지출"}
+                        </div>
+                      </div>
+
+                      {/* 오른쪽: 금액 */}
+                      <div
+                        className={`text-lg font-bold ${
+                          transaction.type === "income" ? "text-toss-blue" : "text-toss-red"
+                        }`}
+                      >
+                        {transaction.type === "income" ? "+" : "-"}
+                        {transaction.amount.toLocaleString()}원
+                      </div>
                     </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
+        ) : (
+          <div className="flex-1 flex items-center justify-center text-gray-400 py-12">
+            <p>{selectedDate ? format(selectedDate, "M월 d일", { locale: ko }) + "에는 내역이 없습니다" : "날짜를 선택해주세요"}</p>
           </div>
-        </div>
-      )}
+        )}
+      </div>
 
       {/* 사이드 메뉴 */}
       <SideMenu isOpen={isSideMenuOpen} onClose={() => setIsSideMenuOpen(false)} />
