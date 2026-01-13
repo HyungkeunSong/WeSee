@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { format, addMonths, subMonths, isSameMonth, endOfMonth, isAfter, isBefore, subYears } from "date-fns";
 import { ko } from "date-fns/locale";
 import { useSwipeable } from "react-swipeable";
@@ -40,6 +40,9 @@ export default function Home() {
   
   // 캘린더 뷰 모드: 'month' | 'week'
   const [calendarViewMode, setCalendarViewMode] = useState<'month' | 'week'>('month');
+  
+  // 디테일뷰 ref (스와이프 감지용)
+  const detailRef = useRef<HTMLDivElement>(null);
 
   // React Query로 재무 데이터 로드 (캐싱 + prefetching 자동 처리)
   const { data: financialData, isLoading } = useFinancialData(currentDate);
@@ -134,6 +137,38 @@ export default function Home() {
     delta: 30, // 최소 스와이프 거리
   });
   
+  // 디테일뷰 스와이프 핸들러 - 스크롤이 맨 위일 때만 뷰 모드 전환
+  const detailSwipeHandlersRaw = useSwipeable({
+    onSwipedUp: () => {
+      const el = detailRef.current;
+      const scrollTop = el?.scrollTop ?? 0;
+      
+      // 스크롤이 맨 위에 있을 때만 토글
+      if (scrollTop < 5) {
+        toggleViewMode();
+      }
+    },
+    onSwipedDown: () => {
+      const el = detailRef.current;
+      const scrollTop = el?.scrollTop ?? 0;
+      
+      // 주간 모드이고 스크롤이 맨 위에 있을 때 월간으로 확장
+      if (scrollTop < 5 && calendarViewMode === 'week') {
+        setCalendarViewMode('month');
+      }
+    },
+    trackMouse: true,
+    preventScrollOnSwipe: false, // 스크롤 허용
+    delta: 50, // 의도적인 스와이프만 감지 (더 큰 delta)
+  });
+  
+  // ref 분리 및 합치기
+  const { ref: swipeRef, ...detailSwipeHandlers } = detailSwipeHandlersRaw;
+  const combinedDetailRef = useCallback((el: HTMLDivElement | null) => {
+    detailRef.current = el;
+    swipeRef(el);
+  }, [swipeRef]);
+  
 
   // 선택된 날짜의 상세 데이터 가져오기
   const getSelectedDayData = () => {
@@ -207,7 +242,13 @@ export default function Home() {
   };
 
   return (
-    <div className="fixed inset-0 bg-white flex flex-col" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
+    <div 
+      className="fixed inset-0 bg-white flex flex-col" 
+      style={{ 
+        paddingTop: 'env(safe-area-inset-top)',
+        paddingBottom: 'calc(3.5rem + env(safe-area-inset-bottom))' // GNB 높이 확보
+      }}
+    >
       {/* Header - 완전 고정 */}
       <div className="flex-none bg-white border-b border-gray-100 px-4 py-4 z-30">
         {/* 년도 표시 */}
@@ -291,10 +332,14 @@ export default function Home() {
         )}
       </button>
 
-      {/* 상세 내역 영역 */}
-      <div className="flex-1 overflow-y-auto bg-white">
+      {/* 상세 내역 영역 - 스와이프로 뷰 모드 전환 */}
+      <div 
+        ref={combinedDetailRef}
+        {...detailSwipeHandlers}
+        className="flex-1 overflow-y-auto bg-white"
+      >
         {selectedDayData && selectedDayData.breakdown.length > 0 ? (
-          <div className="px-4 pt-4 pb-20">
+          <div className="px-4 pt-4 pb-4">
             {/* 날짜 헤더 */}
             <h3 className="text-lg font-bold mb-4 text-gray-900">
               {format(selectedDayData.date, "M월 d일 EEEE", { locale: ko })}
