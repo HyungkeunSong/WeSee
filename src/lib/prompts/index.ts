@@ -5,8 +5,10 @@
  * import { CALENDAR_IMAGE_PROMPT, ANALYSIS_IMAGE_PROMPT } from '@/lib/prompts';
  */
 
-export { CALENDAR_IMAGE_PROMPT } from './calendar-image-prompt';
-export { ANALYSIS_IMAGE_PROMPT } from './analysis-image-prompt';
+import { CALENDAR_IMAGE_PROMPT } from './calendar-image-prompt';
+import { ANALYSIS_IMAGE_PROMPT } from './analysis-image-prompt';
+
+export { CALENDAR_IMAGE_PROMPT, ANALYSIS_IMAGE_PROMPT };
 
 /**
  * GPT 모델 설정
