@@ -304,9 +304,9 @@ export default function Home() {
         className="flex-none flex items-center justify-center py-2 text-gray-400 hover:text-gray-600 transition-colors active:bg-gray-50"
       >
         {calendarViewMode === 'month' ? (
-          <ChevronUp size={20} className="animate-bounce" />
+          <ChevronUp size={20} />
         ) : (
-          <ChevronDown size={20} className="animate-bounce" />
+          <ChevronDown size={20} />
         )}
       </button>
 
