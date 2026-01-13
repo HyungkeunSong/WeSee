@@ -1,6 +1,6 @@
 "use client";
 
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, getDay, startOfWeek, endOfWeek, isSameWeek } from "date-fns";
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, getDay, startOfWeek, isSameWeek } from "date-fns";
 import { ko } from "date-fns/locale";
 
 interface DayData {
@@ -28,40 +28,52 @@ export function MonthCalendar({
   const days = eachDayOfInterval({ start: monthStart, end: monthEnd });
   const startDayOfWeek = getDay(monthStart);
 
-  // 선택된 날짜가 포함된 주의 시작/끝 날짜 계산
-  const getWeekDays = () => {
-    if (!selectedDate) return days;
+  // 날짜들을 주별로 그룹화
+  const getWeeks = () => {
+    const weeks: Date[][] = [];
+    let currentWeek: Date[] = [];
     
-    const weekStart = startOfWeek(selectedDate, { weekStartsOn: 0 }); // 일요일 시작
-    const weekEnd = endOfWeek(selectedDate, { weekStartsOn: 0 });
+    // 첫 주의 빈 칸 추가 (일요일 시작 기준)
+    for (let i = 0; i < startDayOfWeek; i++) {
+      currentWeek.push(null as any); // placeholder for empty slots
+    }
     
-    // 해당 주에 포함된 현재 월의 날짜들만 필터링
-    return days.filter(day => {
-      return day >= weekStart && day <= weekEnd;
+    days.forEach((day, index) => {
+      currentWeek.push(day);
+      
+      // 토요일이거나 마지막 날이면 주 완성
+      if (getDay(day) === 6 || index === days.length - 1) {
+        weeks.push(currentWeek);
+        currentWeek = [];
+      }
     });
+    
+    return weeks;
   };
 
-  // 주간 뷰일 때 보여줄 날짜들
-  const weekDays = getWeekDays();
+  const weeks = getWeeks();
   
-  // 주간 뷰에서 시작 요일의 빈 칸 계산
-  const getWeekStartOffset = () => {
-    if (!selectedDate || weekDays.length === 0) return 0;
-    return getDay(weekDays[0]);
+  // 선택된 날짜가 포함된 주의 인덱스 찾기
+  const getSelectedWeekIndex = () => {
+    if (!selectedDate) return 0;
+    return weeks.findIndex(week => 
+      week.some(day => day && isSameWeek(day, selectedDate, { weekStartsOn: 0 }))
+    );
   };
-
-  const displayDays = viewMode === 'week' ? weekDays : days;
-  const emptySlots = viewMode === 'week' ? getWeekStartOffset() : startDayOfWeek;
-
-  // 전체 행 수 계산 (애니메이션용)
-  const totalRows = viewMode === 'week' ? 1 : Math.ceil((startDayOfWeek + days.length) / 7);
+  
+  const selectedWeekIndex = getSelectedWeekIndex();
+  
+  // 각 주의 높이 (px)
+  const weekHeight = 72;
 
   return (
     <div 
       className="px-4 transition-all duration-300 ease-out"
       style={{
-        // 주간 뷰: 요일 헤더 + 1줄, 월간 뷰: 요일 헤더 + N줄
-        maxHeight: viewMode === 'week' ? '130px' : '400px',
+        // 주간 뷰: 요일 헤더 + 1줄, 월간 뷰: 요일 헤더 + 모든 줄
+        height: viewMode === 'week' 
+          ? `${40 + weekHeight + 16}px`  // 헤더 + 1주 + 패딩
+          : `${40 + weeks.length * weekHeight + 16}px`, // 헤더 + 모든 주 + 패딩
         overflow: 'hidden',
       }}
     >
@@ -77,60 +89,94 @@ export function MonthCalendar({
         ))}
       </div>
 
-      {/* 캘린더 그리드 - 선택 효과가 잘리지 않도록 패딩 추가 */}
-      <div className="grid grid-cols-7 gap-y-2 pb-6 -mx-1 px-1">
-        {/* 빈 셀 (월/주 시작 전) */}
-        {Array.from({ length: emptySlots }).map((_, index) => (
-          <div key={`empty-${index}`} />
-        ))}
-
-        {/* 날짜 버튼 */}
-        {displayDays.map((day) => {
-          const dateKey = format(day, "yyyy-MM-dd");
-          const dayData = data[dateKey];
-          const hasData = dayData && (dayData.income !== 0 || dayData.expense !== 0);
-          const selected = selectedDate && format(selectedDate, "yyyy-MM-dd") === dateKey;
-          const today = new Date();
-          const isToday = format(day, "yyyy-MM-dd") === format(today, "yyyy-MM-dd");
-
+      {/* 캘린더 그리드 - 주별로 렌더링 */}
+      <div 
+        className="transition-transform duration-300 ease-out"
+        style={{
+          // 주간 뷰일 때 선택된 주가 맨 위로 오도록 이동
+          transform: viewMode === 'week' 
+            ? `translateY(-${selectedWeekIndex * weekHeight}px)` 
+            : 'translateY(0)',
+        }}
+      >
+        {weeks.map((week, weekIndex) => {
+          // 주간 뷰에서 선택된 주가 아닌 경우의 스타일
+          const isSelectedWeek = weekIndex === selectedWeekIndex;
+          const isBeforeSelected = weekIndex < selectedWeekIndex;
+          const isAfterSelected = weekIndex > selectedWeekIndex;
+          
           return (
-            <button
-              key={day.toISOString()}
-              onClick={() => onDateClick(day)}
-              className={`
-                relative flex flex-col items-center py-2 rounded-2xl transition-all
-                ${selected ? "bg-white scale-105" : "hover:bg-gray-50"}
-              `}
-              style={selected ? {
-                boxShadow: '0 -2px 8px rgba(0, 0, 0, 0.04), 0 4px 12px rgba(0, 0, 0, 0.08)'
-              } : undefined}
+            <div 
+              key={weekIndex}
+              className="grid grid-cols-7 transition-all duration-300 ease-out"
+              style={{
+                height: `${weekHeight}px`,
+                opacity: viewMode === 'week' && !isSelectedWeek ? 0 : 1,
+                // 선택된 주 위/아래 주들의 추가 효과
+                transform: viewMode === 'week' 
+                  ? isBeforeSelected 
+                    ? 'scale(0.95)' 
+                    : isAfterSelected 
+                      ? 'scale(0.95)' 
+                      : 'scale(1)'
+                  : 'scale(1)',
+              }}
             >
-              {/* 날짜 숫자 */}
-              <span
-                className={`
-                  text-base font-medium mb-1
-                  ${isToday ? "text-toss-blue font-bold" : hasData ? "text-gray-900" : "text-gray-400"}
-                `}
-              >
-                {format(day, "d")}
-              </span>
+              {week.map((day, dayIndex) => {
+                // 빈 칸 처리
+                if (!day) {
+                  return <div key={`empty-${weekIndex}-${dayIndex}`} />;
+                }
+                
+                const dateKey = format(day, "yyyy-MM-dd");
+                const dayData = data[dateKey];
+                const hasData = dayData && (dayData.income !== 0 || dayData.expense !== 0);
+                const selected = selectedDate && format(selectedDate, "yyyy-MM-dd") === dateKey;
+                const today = new Date();
+                const isToday = format(day, "yyyy-MM-dd") === format(today, "yyyy-MM-dd");
 
-              {/* 수입/지출 표시 */}
-              {hasData && (
-                <div className="flex flex-col items-center text-[9px] space-y-0.5 min-h-[32px]">
-                  {dayData.income > 0 && (
-                    <span className="text-toss-blue font-normal">
-                      +{dayData.income.toLocaleString()}
+                return (
+                  <button
+                    key={day.toISOString()}
+                    onClick={() => onDateClick(day)}
+                    className={`
+                      relative flex flex-col items-center py-2 rounded-2xl transition-all duration-200
+                      ${selected ? "bg-white" : "hover:bg-gray-50"}
+                    `}
+                    style={selected ? {
+                      boxShadow: '0 2px 12px rgba(0, 0, 0, 0.08)',
+                      transform: 'scale(1.02)',
+                    } : undefined}
+                  >
+                    {/* 날짜 숫자 */}
+                    <span
+                      className={`
+                        text-base font-medium mb-1
+                        ${isToday ? "text-toss-blue font-bold" : hasData ? "text-gray-900" : "text-gray-400"}
+                      `}
+                    >
+                      {format(day, "d")}
                     </span>
-                  )}
-                  {dayData.expense > 0 && (
-                    <span className={`font-normal ${dayData.expense >= 100000 ? "text-toss-red" : "text-gray-500"}`}>
-                      -{dayData.expense.toLocaleString()}
-                    </span>
-                  )}
-                </div>
-              )}
-            </button>
+
+                    {/* 수입/지출 표시 */}
+                    {hasData && (
+                      <div className="flex flex-col items-center text-[9px] space-y-0.5 min-h-[32px]">
+                        {dayData.income > 0 && (
+                          <span className="text-toss-blue font-normal">
+                            +{dayData.income.toLocaleString()}
+                          </span>
+                        )}
+                        {dayData.expense > 0 && (
+                          <span className={`font-normal ${dayData.expense >= 100000 ? "text-toss-red" : "text-gray-500"}`}>
+                            -{dayData.expense.toLocaleString()}
+                          </span>
+                        )}
+                      </div>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
           );
         })}
       </div>
