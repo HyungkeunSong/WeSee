@@ -1,65 +1,355 @@
-import Image from "next/image";
+"use client";
+
+import { useState, useEffect } from "react";
+import { format, addMonths, subMonths, isSameMonth, endOfMonth, isAfter, isBefore, subYears } from "date-fns";
+import { ko } from "date-fns/locale";
+import { useSwipeable } from "react-swipeable";
+import { Menu } from "lucide-react";
+import Link from "next/link";
+import { MonthCalendar } from "@/components/month-calendar";
+import { SideMenu } from "@/components/side-menu";
+import { useFinancialData } from "@/hooks/useFinancialData";
+import { useProfile } from "@/hooks/useProfile";
+
+// 날짜별 수입/지출 데이터 타입
+interface DayData {
+  income: number;
+  expense: number;
+}
+
+// 개인별 거래 내역 타입
+interface PersonTransaction {
+  person: string;
+  avatarUrl?: string;
+  amount: number;
+  type: "income" | "expense";
+}
+
+// API 응답 타입은 hook에서 import
+import type { FinancialRecordsResponse } from "@/hooks/useFinancialData";
 
 export default function Home() {
+  const today = new Date();
+  
+  // 초기값은 항상 today로 설정 (SSR/CSR 일치)
+  const [currentDate, setCurrentDate] = useState<Date>(today);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [preferredDay, setPreferredDay] = useState<number>(today.getDate()); // 사용자가 선호하는 일자
+  const [isInitialized, setIsInitialized] = useState(false);
+  const [isSideMenuOpen, setIsSideMenuOpen] = useState(false);
+
+  // React Query로 재무 데이터 로드 (캐싱 + prefetching 자동 처리)
+  const { data: financialData, isLoading } = useFinancialData(currentDate);
+  
+  // 프로필 데이터 미리 로드 (사이드 메뉴에서 즉시 표시하기 위함)
+  useProfile();
+
+  // 클라이언트에서 마운트 후 localStorage에서 월 복원
+  useEffect(() => {
+    const savedMonth = localStorage.getItem('currentMonth');
+    if (savedMonth) {
+      const [year, month] = savedMonth.split('-').map(Number);
+      const savedDate = new Date(year, month - 1, 1);
+      setCurrentDate(savedDate);
+    }
+    setIsInitialized(true);
+  }, []);
+
+  // 선택 날짜 초기화 로직
+  useEffect(() => {
+    // 현재 월의 마지막 날짜 확인
+    const lastDayOfMonth = endOfMonth(currentDate).getDate();
+    
+    // preferredDay가 현재 월에 존재하면 그 날을, 없으면 마지막 날을 선택
+    const dayToSelect = preferredDay <= lastDayOfMonth ? preferredDay : lastDayOfMonth;
+    
+    // 새로운 날짜 생성
+    const newDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), dayToSelect);
+    setSelectedDate(newDate);
+  }, [currentDate, preferredDay]);
+
+  // 현재 보고 있는 월을 localStorage에 저장
+  useEffect(() => {
+    if (isInitialized) {
+      localStorage.setItem('currentMonth', format(currentDate, 'yyyy-MM'));
+    }
+  }, [currentDate, isInitialized]);
+
+  // 월 이동 가능 여부 확인
+  const twoYearsAgo = subYears(today, 2);
+  const canGoPrevious = isAfter(subMonths(currentDate, 1), twoYearsAgo);
+  const canGoNext = isBefore(addMonths(currentDate, 1), today);
+
+  const handleDateClick = (date: Date) => {
+    setSelectedDate(date);
+    setPreferredDay(date.getDate()); // 선택한 일자를 기억
+  };
+
+  const handlePreviousMonth = () => {
+    if (canGoPrevious && !isTransitioning) {
+      setIsTransitioning(true);
+      setTimeout(() => {
+        setCurrentDate(subMonths(currentDate, 1));
+        setIsTransitioning(false);
+      }, 150);
+    }
+  };
+
+  const handleNextMonth = () => {
+    if (canGoNext && !isTransitioning) {
+      setIsTransitioning(true);
+      setTimeout(() => {
+        setCurrentDate(addMonths(currentDate, 1));
+        setIsTransitioning(false);
+      }, 150);
+    }
+  };
+
+  // 스와이프 핸들러
+  const swipeHandlers = useSwipeable({
+    onSwipedLeft: () => handleNextMonth(), // 왼쪽으로 스와이프 = 다음 달
+    onSwipedRight: () => handlePreviousMonth(), // 오른쪽으로 스와이프 = 이전 달
+    trackMouse: true, // 마우스 드래그도 감지 (데스크톱 테스트용)
+    preventScrollOnSwipe: true,
+  });
+
+  // 휠 스크롤 핸들러 (상하 스크롤)
+  const [lastScrollTime, setLastScrollTime] = useState(0);
+  const handleWheel = (e: React.WheelEvent) => {
+    const now = Date.now();
+    // 500ms 디바운싱 - 너무 빠르게 월이 바뀌는 것을 방지
+    if (now - lastScrollTime < 500) return;
+    
+    // deltaY > 0: 아래로 스크롤 = 이전 달
+    // deltaY < 0: 위로 스크롤 = 다음 달
+    if (Math.abs(e.deltaY) > 50) { // 최소 스크롤 임계값 증가
+      setLastScrollTime(now);
+      if (e.deltaY > 0) {
+        handlePreviousMonth();
+      } else {
+        handleNextMonth();
+      }
+    }
+  };
+
+  // 선택된 날짜의 상세 데이터 가져오기
+  const getSelectedDayData = () => {
+    if (!selectedDate || !financialData) return null;
+    
+    const day = selectedDate.getDate();
+    const dayKey = day.toString();
+    const dayData = financialData.combinedData.dailyTransactions[dayKey];
+
+    if (!dayData) return null;
+
+    // 개인별 데이터 분해
+    const breakdown: PersonTransaction[] = [];
+    Object.entries(financialData.individuals || {}).forEach(([userId, userData]) => {
+      const personDayData = userData.data.dailyTransactions[dayKey];
+      if (personDayData) {
+        const userName = userData.userName || '사용자';
+        const avatarUrl = userData.avatarUrl;
+        if (personDayData.income > 0) {
+          breakdown.push({
+            person: userName,
+            avatarUrl: avatarUrl,
+            amount: personDayData.income,
+            type: 'income',
+          });
+        }
+        if (personDayData.expense > 0) {
+          breakdown.push({
+            person: userName,
+            avatarUrl: avatarUrl,
+            amount: personDayData.expense,
+            type: 'expense',
+          });
+        }
+      }
+    });
+
+    // 정렬: 수입 먼저, 지출 나중에, 같은 타입 내에서는 닉네임 가나다순
+    breakdown.sort((a, b) => {
+      // 1. 타입별 정렬 (income이 expense보다 먼저)
+      if (a.type !== b.type) {
+        return a.type === 'income' ? -1 : 1;
+      }
+      // 2. 같은 타입 내에서는 닉네임 가나다순
+      return a.person.localeCompare(b.person, 'ko-KR');
+    });
+
+    return {
+      date: selectedDate,
+      total: dayData,
+      breakdown,
+    };
+  };
+
+  const selectedDayData = getSelectedDayData();
+
+  // 월간 데이터를 날짜별 Map으로 변환 (캘린더 컴포넌트용)
+  const getDayDataMap = (): Record<string, DayData> => {
+    if (!financialData) return {};
+    
+    const result: Record<string, DayData> = {};
+    const year = currentDate.getFullYear();
+    const month = currentDate.getMonth() + 1;
+    
+    Object.entries(financialData.combinedData.dailyTransactions).forEach(([day, data]) => {
+      const dateKey = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+      result[dateKey] = data;
+    });
+    
+    return result;
+  };
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
+    <div className="fixed inset-0 bg-white flex flex-col">
+      {/* Header - 완전 고정 */}
+      <div className="flex-none bg-white border-b border-gray-100 px-4 py-4 z-50">
+        {/* 년도 표시 */}
+        <div className="text-sm text-gray-500 font-medium mb-1">
+          {format(currentDate, "yyyy년", { locale: ko })}
+        </div>
+        {/* 월 표시 + 오늘 버튼 + 설정 아이콘 */}
+        <div className="flex items-center justify-between">
+          <h1 className="text-3xl font-bold text-gray-900">
+            {format(currentDate, "M월", { locale: ko })}
           </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+          <div className="flex items-center gap-4">
+            {/* 오늘 버튼 - 오늘 날짜를 보고 있으면 disabled */}
+            <button
+              onClick={() => {
+                const isViewingToday = selectedDate && format(selectedDate, "yyyy-MM-dd") === format(today, "yyyy-MM-dd");
+                if (!isTransitioning && !isViewingToday) {
+                  // 당월이면 transition 없이 날짜만 변경
+                  if (isSameMonth(currentDate, today)) {
+                    setSelectedDate(today);
+                    setPreferredDay(today.getDate());
+                  } else {
+                    // 다른 월이면 transition과 함께 이동
+                    setIsTransitioning(true);
+                    setTimeout(() => {
+                      setCurrentDate(today);
+                      setPreferredDay(today.getDate());
+                      setIsTransitioning(false);
+                    }, 150);
+                  }
+                }
+              }}
+              disabled={selectedDate ? format(selectedDate, "yyyy-MM-dd") === format(today, "yyyy-MM-dd") : false}
+              className={`text-sm font-semibold transition-colors ${
+                selectedDate && format(selectedDate, "yyyy-MM-dd") === format(today, "yyyy-MM-dd")
+                  ? "text-gray-300 cursor-not-allowed"
+                  : "text-gray-900 hover:text-gray-600"
+              }`}
             >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+              오늘
+            </button>
+            <button 
+              onClick={() => setIsSideMenuOpen(true)}
+              className="p-2.5 hover:bg-gray-50 rounded-lg transition-all active:scale-95"
             >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+              <Menu size={24} className="text-gray-400" strokeWidth={2} />
+            </button>
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+      </div>
+
+      {/* 캘린더 영역 - 완전 고정, 스크롤 없음 */}
+      <div 
+        {...swipeHandlers}
+        onWheel={handleWheel}
+        className={`flex-none transition-opacity duration-150 border-b border-gray-100 ${
+          isTransitioning ? "opacity-50" : "opacity-100"
+        }`}
+      >
+        <MonthCalendar
+          currentDate={currentDate}
+          data={getDayDataMap()}
+          selectedDate={selectedDate}
+          onDateClick={handleDateClick}
+        />
+        {isLoading && (
+          <div className="absolute inset-0 bg-white/50 flex items-center justify-center">
+            <div className="text-sm text-gray-500">로딩 중...</div>
+          </div>
+        )}
+      </div>
+
+      {/* 상세 내역 영역 - 이 영역만 스크롤 */}
+      {selectedDayData && selectedDayData.breakdown.length > 0 && (
+        <div className="flex-1 overflow-y-auto bg-white">
+          <div className="px-4 pt-6 pb-24">
+          {/* 날짜 헤더 */}
+          <h3 className="text-lg font-bold mb-4 text-gray-900">
+            {format(selectedDayData.date, "M월 d일 EEEE", { locale: ko })}
+          </h3>
+
+          {/* 거래 목록 - 카드형 */}
+          <div className="space-y-3">
+            {selectedDayData.breakdown.map((transaction, index) => {
+              // 이니셜 추출 (첫 글자)
+              const initial = transaction.person.charAt(0);
+              // 수입/지출에 따른 아바타 배경색 (토스 색상)
+              const avatarBg = transaction.type === "income" 
+                ? "bg-toss-blue-light" 
+                : "bg-toss-red-light";
+              const avatarText = transaction.type === "income"
+                ? "text-toss-blue-dark"
+                : "text-toss-red-dark";
+              
+              return (
+                <div 
+                  key={index} 
+                  className="bg-white rounded-xl p-4 shadow-md border border-gray-100 flex items-center gap-3"
+                >
+                  {/* 아바타 */}
+                  <div className={`w-10 h-10 rounded-full ${avatarBg} ${avatarText} flex items-center justify-center font-semibold text-sm flex-shrink-0 overflow-hidden`}>
+                    {transaction.avatarUrl ? (
+                      <img
+                        src={transaction.avatarUrl}
+                        alt={transaction.person}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      initial
+                    )}
+                  </div>
+
+                  {/* 정보 */}
+                  <div className="flex-1 flex items-center justify-between">
+                    {/* 왼쪽: 이름 + 타입 */}
+                    <div>
+                      <div className="text-sm font-semibold text-gray-900">
+                        {transaction.person}
+                      </div>
+                      <div className="text-xs text-gray-500 mt-0.5">
+                        {transaction.type === "income" ? "수입" : "지출"}
+                      </div>
+                    </div>
+
+                    {/* 오른쪽: 금액 */}
+                    <div
+                      className={`text-lg font-bold ${
+                        transaction.type === "income" ? "text-toss-blue" : "text-toss-red"
+                      }`}
+                    >
+                      {transaction.type === "income" ? "+" : "-"}
+                      {transaction.amount.toLocaleString()}원
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          </div>
         </div>
-      </main>
+      )}
+
+      {/* 사이드 메뉴 */}
+      <SideMenu isOpen={isSideMenuOpen} onClose={() => setIsSideMenuOpen(false)} />
     </div>
   );
 }
