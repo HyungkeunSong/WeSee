@@ -134,24 +134,6 @@ export default function Home() {
     delta: 30, // 최소 스와이프 거리
   });
   
-  // 디테일 영역 스와이프 핸들러 - 위로 스와이프하면 캘린더 축소
-  const detailSwipeHandlers = useSwipeable({
-    onSwipedUp: () => {
-      // 위로 스와이프 = 디테일 뷰 확장 의도 = 캘린더 축소
-      if (calendarViewMode === 'month') {
-        setCalendarViewMode('week');
-      }
-    },
-    onSwipedDown: () => {
-      // 아래로 스와이프 = 캘린더 확장
-      if (calendarViewMode === 'week') {
-        setCalendarViewMode('month');
-      }
-    },
-    trackMouse: false,
-    preventScrollOnSwipe: false,
-    delta: 50, // 디테일에서는 좀 더 큰 제스처 필요
-  });
 
   // 선택된 날짜의 상세 데이터 가져오기
   const getSelectedDayData = () => {
@@ -310,11 +292,8 @@ export default function Home() {
         )}
       </button>
 
-      {/* 상세 내역 영역 - 스와이프로 캘린더 축소/확장 */}
-      <div 
-        {...detailSwipeHandlers}
-        className="flex-1 overflow-y-auto bg-white"
-      >
+      {/* 상세 내역 영역 */}
+      <div className="flex-1 overflow-y-auto bg-white">
         {selectedDayData && selectedDayData.breakdown.length > 0 ? (
           <div className="px-4 pt-4 pb-20">
             {/* 날짜 헤더 */}
