@@ -27,12 +27,12 @@ export default function BottomNav() {
 
   return (
     <nav 
-      className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 shadow-[0_-2px_10px_rgba(0,0,0,0.05)]"
+      className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 shadow-[0_-2px_10px_rgba(0,0,0,0.05)] touch-none select-none"
       style={{
-        paddingBottom: 'env(safe-area-inset-bottom)'
+        paddingBottom: 'max(env(safe-area-inset-bottom), 8px)'
       }}
     >
-      <div className="flex items-center max-w-lg mx-auto px-2 h-14">
+      <div className="flex items-center max-w-lg mx-auto px-2 h-12">
         {navItems.map((item) => {
           const isActive = pathname === item.href;
           const Icon = item.icon;
@@ -47,8 +47,8 @@ export default function BottomNav() {
                   : 'text-gray-500 hover:text-gray-700'
               }`}
             >
-              <Icon className="w-5 h-5" />
-              <span className="text-[10px] font-medium whitespace-nowrap mt-1">{item.name}</span>
+              <Icon className="w-5 h-5" strokeWidth={1.8} />
+              <span className="text-[10px] font-medium whitespace-nowrap mt-0.5">{item.name}</span>
             </Link>
           );
         })}

@@ -354,7 +354,7 @@ export default function UploadPage() {
       </div>
 
       {/* 컨텐츠 - 여기만 스크롤 */}
-      <div className="flex-1 overflow-y-auto bg-gray-50 p-4 space-y-4 overscroll-contain" style={{ paddingBottom: 'calc(3.5rem + env(safe-area-inset-bottom))' }}>
+      <div className="flex-1 overflow-y-auto bg-gray-50 p-4 space-y-4 overscroll-contain" style={{ paddingBottom: 'calc(3rem + max(env(safe-area-inset-bottom), 8px))' }}>
         <div className="max-w-lg mx-auto w-full space-y-4">
           {/* 월 선택 */}
           <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">

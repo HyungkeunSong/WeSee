@@ -19,10 +19,26 @@
   }
 }
 
+html {
+  /* iOS Safari overscroll bounce 방지 */
+  overscroll-behavior: none;
+  overflow: hidden;
+  height: 100%;
+  height: -webkit-fill-available;
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  /* iOS Safari overscroll bounce 방지 */
+  overscroll-behavior: none;
+  overflow: hidden;
+  height: 100%;
+  height: -webkit-fill-available;
+  position: fixed;
+  width: 100%;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* Safe Area 지원 (iOS 노치, 홈 인디케이터 등) */

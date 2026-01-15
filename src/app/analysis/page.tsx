@@ -171,7 +171,7 @@ export default function AnalysisPage() {
     <div className="fixed inset-0 bg-white flex flex-col overscroll-none">
       <Header />
 
-      <div className="flex-1 overflow-y-auto bg-gray-50 overscroll-contain relative" style={{ paddingBottom: 'calc(3.5rem + env(safe-area-inset-bottom))' }}>
+      <div className="flex-1 overflow-y-auto bg-gray-50 overscroll-contain relative" style={{ paddingBottom: 'calc(3rem + max(env(safe-area-inset-bottom), 8px))' }}>
         <div className="max-w-lg mx-auto w-full">
           
           {/* 월 선택 */}
