@@ -12,16 +12,10 @@ export default function LayoutWithNav({ children }: { children: React.ReactNode 
   const shouldShowNav = !hideNavPaths.includes(pathname) && 
     !hideNavPrefixes.some(prefix => pathname.startsWith(prefix));
 
-  // GNB가 있는 페이지는 전체 레이아웃을 fixed로 감싸서 iOS rubber-band 방지
   if (shouldShowNav) {
     return (
-      <div 
-        className="fixed inset-0 flex flex-col"
-        style={{ 
-          paddingBottom: 'env(safe-area-inset-bottom, 0px)'
-        }}
-      >
-        <div className="flex-1 overflow-hidden relative">
+      <div className="fixed inset-0 flex flex-col overflow-hidden">
+        <div className="flex-1 min-h-0 relative">
           {children}
         </div>
         <BottomNav />

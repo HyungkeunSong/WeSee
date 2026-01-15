@@ -193,10 +193,9 @@ export default function Home() {
     setCalendarViewMode(prev => prev === 'month' ? 'week' : 'month');
   };
 
-  // 캘린더 영역 스와이프 핸들러 - 좌우로 월/주 이동, 상하로 월 이동 (월간 뷰에서만)
+  // 캘린더 영역 스와이프 핸들러 - 좌우로 월/주 이동
   const calendarSwipeHandlers = useSwipeable({
     onSwipedLeft: () => {
-      // 주간 뷰: 다음 주로, 월간 뷰: 다음 달로
       if (calendarViewMode === 'week') {
         handleNextWeek();
       } else {
@@ -204,55 +203,21 @@ export default function Home() {
       }
     },
     onSwipedRight: () => {
-      // 주간 뷰: 이전 주로, 월간 뷰: 이전 달로
       if (calendarViewMode === 'week') {
         handlePreviousWeek();
       } else {
         handlePreviousMonth();
       }
     },
-    onSwipedUp: () => {
-      // 위로 스와이프 = 다음 달로 (월간 뷰에서만)
-      if (calendarViewMode === 'month') {
-        handleNextMonth();
-      }
-    },
-    onSwipedDown: () => {
-      // 아래로 스와이프 = 이전 달로 (월간 뷰에서만)
-      if (calendarViewMode === 'month') {
-        handlePreviousMonth();
-      }
-    },
-    trackMouse: true,
-    preventScrollOnSwipe: true,
-    delta: 30, // 최소 스와이프 거리
+    trackMouse: false,
+    preventScrollOnSwipe: false,
+    delta: 50,
   });
   
-  // 디테일뷰 스와이프 핸들러 - 스크롤이 맨 위일 때만 뷰 모드 전환
-  const detailSwipeHandlersRaw = useSwipeable({
-    onSwipedUp: () => {
-      // 위로 스와이프: 월간 모드일 때 주간 모드로 축소 (디테일뷰 확장 의도)
-      if (calendarViewMode === 'month') {
-        setCalendarViewMode('week');
-      }
-    },
-    onSwipedDown: () => {
-      // 아래로 스와이프: 주간 모드일 때 월간 모드로 확장 (디테일뷰 축소 의도)
-      if (calendarViewMode === 'week') {
-        setCalendarViewMode('month');
-      }
-    },
-    trackMouse: true,
-    preventScrollOnSwipe: false, // 스크롤 허용
-    delta: 50, // 의도적인 스와이프만 감지 (더 큰 delta)
-  });
-  
-  // ref 분리 및 합치기
-  const { ref: swipeRef, ...detailSwipeHandlers } = detailSwipeHandlersRaw;
+  // 디테일뷰 ref
   const combinedDetailRef = useCallback((el: HTMLDivElement | null) => {
     detailRef.current = el;
-    swipeRef(el);
-  }, [swipeRef]);
+  }, []);
   
 
   // 선택된 날짜의 상세 데이터 가져오기
@@ -382,7 +347,8 @@ export default function Home() {
         {/* 캘린더 영역 */}
         <div 
           {...calendarSwipeHandlers}
-          className="flex-none transition-all duration-300 ease-out border-t border-gray-100"
+          className="flex-none border-t border-gray-100"
+          style={{ touchAction: 'pan-x' }}
         >
           <MonthCalendar
             currentDate={currentDate}
@@ -410,7 +376,6 @@ export default function Home() {
       {/* 상세 내역 영역 */}
       <div 
         ref={combinedDetailRef}
-        {...detailSwipeHandlers}
         className="flex-1 bg-white overflow-y-auto overscroll-contain"
       >
         {selectedDayData && selectedDayData.breakdown.length > 0 ? (
