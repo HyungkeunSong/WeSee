@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { createClient } from '@/lib/supabase/client';
 import { useRouter } from 'next/navigation';
 import { useProfile } from '@/hooks/useProfile';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface SideMenuProps {
   isOpen: boolean;
@@ -14,12 +15,15 @@ interface SideMenuProps {
 export function SideMenu({ isOpen, onClose }: SideMenuProps) {
   const router = useRouter();
   const supabase = createClient();
+  const queryClient = useQueryClient();
   
   // React Query로 프로필 데이터 캐싱
   const { data: profile } = useProfile();
 
   const handleLogout = async () => {
     try {
+      // 모든 React Query 캐시 클리어
+      queryClient.clear();
       await supabase.auth.signOut();
       router.push('/login');
       router.refresh();
@@ -32,7 +36,7 @@ export function SideMenu({ isOpen, onClose }: SideMenuProps) {
     <>
       {/* 오버레이 */}
       <div
-        className={`fixed inset-0 bg-black/50 z-40 transition-opacity duration-300 ${
+        className={`fixed inset-0 bg-black/40 z-[100] transition-opacity duration-300 ${
           isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
         }`}
         onClick={onClose}
@@ -40,41 +44,40 @@ export function SideMenu({ isOpen, onClose }: SideMenuProps) {
 
       {/* 사이드 메뉴 */}
       <div
-        className={`fixed top-0 right-0 h-full w-80 bg-white z-50 transform transition-transform duration-300 ${
+        className={`fixed top-0 right-0 bottom-0 w-64 bg-white z-[101] transform transition-transform duration-300 flex flex-col ${
           isOpen ? 'translate-x-0' : 'translate-x-full'
         }`}
         style={{ paddingTop: 'env(safe-area-inset-top)' }}
       >
-        {/* 헤더 */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-          <h2 className="text-xl font-bold text-gray-900">메뉴</h2>
+        {/* 헤더 - 닫기 버튼만 */}
+        <div className="flex items-center justify-end px-4 py-3">
           <button
             onClick={onClose}
             className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
           >
-            <X size={24} className="text-gray-600" />
+            <X size={20} className="text-gray-400" />
           </button>
         </div>
 
         {/* 프로필 섹션 */}
         <Link href="/profile" onClick={onClose}>
-          <div className="px-6 py-6 border-b border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer">
-            <div className="flex items-center gap-4">
-              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center flex-shrink-0">
+          <div className="px-5 py-4 border-b border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center flex-shrink-0 overflow-hidden">
                 {profile?.avatar_url ? (
                   <img
                     src={profile.avatar_url}
                     alt="프로필"
-                    className="w-full h-full rounded-full object-cover"
+                    className="w-full h-full rounded-full object-cover brightness-[0.97] saturate-[0.9]"
                   />
                 ) : (
-                  <span className="text-white text-2xl font-bold">
+                  <span className="text-white text-lg font-semibold">
                     {profile?.name?.charAt(0) || '?'}
                   </span>
                 )}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="font-semibold text-gray-900 text-lg truncate">
+                <p className="font-semibold text-gray-900 truncate">
                   {profile?.name || '사용자'}
                 </p>
                 <p className="text-sm text-gray-500 truncate">{profile?.email}</p>
@@ -84,43 +87,30 @@ export function SideMenu({ isOpen, onClose }: SideMenuProps) {
         </Link>
 
         {/* 메뉴 리스트 */}
-        <div className="py-4">
+        <div 
+          className="flex-1 py-2"
+          style={{ paddingBottom: 'calc(4.5rem + env(safe-area-inset-bottom))' }}
+        >
           <Link href="/profile" onClick={onClose}>
-            <div className="flex items-center gap-4 px-6 py-4 hover:bg-gray-50 transition-colors cursor-pointer">
-              <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center">
-                <User size={20} className="text-blue-600" />
-              </div>
-              <div>
-                <p className="font-medium text-gray-900">내 프로필</p>
-                <p className="text-xs text-gray-500">프로필 및 초대 코드 관리</p>
-              </div>
+            <div className="flex items-center gap-2 px-5 py-3 hover:bg-gray-50 transition-colors cursor-pointer">
+              <User size={18} className="text-gray-500" />
+              <span className="text-sm font-medium text-gray-700">내 프로필</span>
             </div>
           </Link>
 
           <Link href="/app-info" onClick={onClose}>
-            <div className="flex items-center gap-4 px-6 py-4 hover:bg-gray-50 transition-colors cursor-pointer">
-              <div className="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center">
-                <Info size={20} className="text-purple-600" />
-              </div>
-              <div>
-                <p className="font-medium text-gray-900">앱 정보</p>
-                <p className="text-xs text-gray-500">버전 및 라이선스 정보</p>
-              </div>
+            <div className="flex items-center gap-2 px-5 py-3 hover:bg-gray-50 transition-colors cursor-pointer">
+              <Info size={18} className="text-gray-500" />
+              <span className="text-sm font-medium text-gray-700">앱 정보</span>
             </div>
           </Link>
-        </div>
 
-        {/* 로그아웃 버튼 */}
-        <div 
-          className="absolute left-0 right-0 p-6 border-t border-gray-100 bg-white"
-          style={{ bottom: 'calc(3.5rem + env(safe-area-inset-bottom))' }}
-        >
           <button
             onClick={handleLogout}
-            className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-red-50 hover:bg-red-100 text-red-600 rounded-xl font-medium transition-colors"
+            className="flex items-center gap-2 px-5 py-3 w-full hover:bg-gray-50 transition-colors group"
           >
-            <LogOut size={20} />
-            로그아웃
+            <LogOut size={18} className="text-gray-500 group-hover:text-red-600" />
+            <span className="text-sm font-medium text-gray-700 group-hover:text-red-600">로그아웃</span>
           </button>
         </div>
       </div>

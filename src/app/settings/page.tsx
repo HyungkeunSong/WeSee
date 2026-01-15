@@ -35,7 +35,7 @@ export default function SettingsPage() {
       <div className="px-5 py-6">
         {/* 프로필 섹션 */}
         <div className="mb-8">
-          <h2 className="text-lg font-semibold mb-4 text-gray-900">프로필 설정</h2>
+          <h2 className="text-lg font-bold mb-4 text-gray-900">프로필 설정</h2>
           
           {/* 파트너 1 */}
           <div className="mb-4">
@@ -85,10 +85,10 @@ export default function SettingsPage() {
           <button
             onClick={handleSave}
             disabled={isSaving}
-            className={`w-full py-4 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 ${
+            className={`w-full py-4 rounded-xl font-semibold transition-colors flex items-center justify-center gap-2 ${
               isSaving
                 ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                : "bg-blue-600 text-white hover:bg-blue-700 active:scale-[0.98]"
+                : "bg-[#3182F6] text-white hover:bg-[#1C6DD0]"
             }`}
           >
             <Save size={20} />
@@ -98,7 +98,7 @@ export default function SettingsPage() {
 
         {/* 앱 정보 섹션 */}
         <div className="border-t border-gray-100 pt-6">
-          <h2 className="text-lg font-semibold mb-4 text-gray-900">앱 정보</h2>
+          <h2 className="text-lg font-bold mb-4 text-gray-900">앱 정보</h2>
           <div className="space-y-3">
             <div className="flex justify-between items-center py-3">
               <span className="text-sm text-gray-600">버전</span>

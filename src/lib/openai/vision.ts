@@ -79,9 +79,10 @@ export async function analyzeAnalysisImage(
   
   console.log('[ANALYSIS] GPT 응답:', JSON.stringify(result, null, 2));
   
-  // 데이터 검증 (year는 null이어도 괜찮음 - fallback 사용)
-  if (!result.month || !result.categoryAnalysis) {
-    console.error('[ANALYSIS] 검증 실패 - year:', result.year, 'month:', result.month, 'categoryAnalysis:', !!result.categoryAnalysis);
+  // 데이터 검증 (year/month는 null이어도 괜찮음 - fallback 사용)
+  // 카테고리별 소비 화면에서는 year/month가 표시되지 않으므로 null 허용
+  if (!result.categoryAnalysis) {
+    console.error('[ANALYSIS] 검증 실패 - categoryAnalysis:', !!result.categoryAnalysis);
     throw new Error('소비분석 이미지 분석 결과가 올바르지 않습니다.');
   }
 

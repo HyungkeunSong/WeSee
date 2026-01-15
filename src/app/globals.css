@@ -56,3 +56,137 @@ body {
 .text-toss-red-dark {
   color: #E8344E;
 }
+
+/* 같이봄 듀얼 컬러 시스템 */
+
+/* Primary Color (Blue) - 신뢰감 */
+.bg-primary {
+  background-color: #3182F6;
+}
+
+.bg-primary-hover {
+  background-color: #1C6DD0;
+}
+
+.bg-primary-light {
+  background-color: #EBF4FF;
+}
+
+.text-primary {
+  color: #3182F6;
+}
+
+/* Accent Color (Coral) - 따뜻함 */
+.bg-accent {
+  background-color: #FF6B9D;
+}
+
+.bg-accent-hover {
+  background-color: #FF5A8A;
+}
+
+.bg-accent-light {
+  background-color: #FFF0F5;
+}
+
+.text-accent {
+  color: #FF6B9D;
+}
+
+/* 하위호환성 (기존 코드) */
+.bg-coral {
+  background-color: #FF6B9D;
+}
+
+.text-coral {
+  color: #FF6B9D;
+}
+
+/* CTA 버튼 스타일 */
+.btn-primary {
+  background-color: #3182F6;
+  color: white;
+  transition: background-color 0.2s;
+}
+
+.btn-primary:hover {
+  background-color: #1C6DD0;
+}
+
+.btn-primary:disabled {
+  background-color: #93C5FD;
+  color: white;
+}
+
+.btn-accent {
+  background-color: #FF6B9D;
+  color: white;
+  transition: background-color 0.2s;
+}
+
+.btn-accent:hover {
+  background-color: #FF5A8A;
+}
+
+/* 앱 아이콘 그라디언트 (블루-퍼플) */
+.bg-app-icon-gradient {
+  background: linear-gradient(to bottom right, #3B82F6, #9333EA);
+}
+
+/* 성공 화면 애니메이션 */
+@keyframes success-pop {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.15);
+  }
+  70% {
+    transform: scale(0.95);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes check-draw {
+  0% {
+    stroke-dashoffset: 50;
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+}
+
+@keyframes fade-in-up {
+  0% {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.animate-success-pop {
+  animation: success-pop 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.animate-check-draw {
+  animation: check-draw 0.4s ease-out 0.3s forwards;
+  stroke-dasharray: 50;
+  stroke-dashoffset: 50;
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.5s ease-out 0.4s forwards;
+  opacity: 0;
+}

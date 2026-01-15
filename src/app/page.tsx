@@ -7,6 +7,7 @@ import { useSwipeable } from "react-swipeable";
 import { Menu, ChevronDown, ChevronUp } from "lucide-react";
 import { MonthCalendar } from "@/components/month-calendar";
 import { SideMenu } from "@/components/side-menu";
+import { CoupleInviteSheet } from "@/components/couple-invite-sheet";
 import { useFinancialData } from "@/hooks/useFinancialData";
 import { useProfile } from "@/hooks/useProfile";
 
@@ -37,6 +38,8 @@ export default function Home() {
   const [preferredDay, setPreferredDay] = useState<number>(today.getDate()); // 사용자가 선호하는 일자
   const [isInitialized, setIsInitialized] = useState(false);
   const [isSideMenuOpen, setIsSideMenuOpen] = useState(false);
+  const [isInviteSheetOpen, setIsInviteSheetOpen] = useState(false);
+  const [isCoupleConnected, setIsCoupleConnected] = useState<boolean | null>(null);
   
   // 캘린더 뷰 모드: 'month' | 'week'
   const [calendarViewMode, setCalendarViewMode] = useState<'month' | 'week'>('month');
@@ -52,7 +55,17 @@ export default function Home() {
 
   // 클라이언트에서 마운트 후 localStorage에서 월 복원
   useEffect(() => {
+    const hasSeenInviteSheet = localStorage.getItem('hasSeenInviteSheet');
     const savedMonth = localStorage.getItem('currentMonth');
+    
+    // 첫 방문(바텀시트 안 본 상태)이면 현재 월로 설정
+    if (!hasSeenInviteSheet) {
+      // 첫 방문이므로 현재 월 사용 (today는 이미 오늘 날짜)
+      setIsInitialized(true);
+      return;
+    }
+    
+    // 재방문이면 저장된 월 복원
     if (savedMonth) {
       const [year, month] = savedMonth.split('-').map(Number);
       const savedDate = new Date(year, month - 1, 1);
@@ -60,6 +73,37 @@ export default function Home() {
     }
     setIsInitialized(true);
   }, []);
+
+  // 커플 연결 상태 확인 및 바텀 시트 표시
+  useEffect(() => {
+    const checkCoupleStatus = async () => {
+      try {
+        const response = await fetch('/api/couple/status');
+        if (response.ok) {
+          const data = await response.json();
+          setIsCoupleConnected(data.connected);
+          
+          // 커플 미연결 + 처음 방문(또는 회원가입 직후)인 경우 바텀 시트 표시
+          if (!data.connected) {
+            const hasSeenInviteSheet = localStorage.getItem('hasSeenInviteSheet');
+            if (!hasSeenInviteSheet) {
+              // 약간의 딜레이 후 표시 (페이지 로드 후 자연스럽게)
+              setTimeout(() => {
+                setIsInviteSheetOpen(true);
+                localStorage.setItem('hasSeenInviteSheet', 'true');
+              }, 1000);
+            }
+          }
+        }
+      } catch {
+        // 에러 시 무시 (로그인 안된 상태 등)
+      }
+    };
+
+    if (isInitialized) {
+      checkCoupleStatus();
+    }
+  }, [isInitialized]);
 
   // 선택 날짜 초기화 로직
   useEffect(() => {
@@ -149,7 +193,7 @@ export default function Home() {
     setCalendarViewMode(prev => prev === 'month' ? 'week' : 'month');
   };
 
-  // 캘린더 영역 스와이프 핸들러 - 좌우로 월/주 이동, 상하로 뷰 모드 전환
+  // 캘린더 영역 스와이프 핸들러 - 좌우로 월/주 이동, 상하로 월 이동 (월간 뷰에서만)
   const calendarSwipeHandlers = useSwipeable({
     onSwipedLeft: () => {
       // 주간 뷰: 다음 주로, 월간 뷰: 다음 달로
@@ -168,15 +212,15 @@ export default function Home() {
       }
     },
     onSwipedUp: () => {
-      // 위로 스와이프 = 캘린더 축소 (week 모드로)
+      // 위로 스와이프 = 다음 달로 (월간 뷰에서만)
       if (calendarViewMode === 'month') {
-        setCalendarViewMode('week');
+        handleNextMonth();
       }
     },
     onSwipedDown: () => {
-      // 아래로 스와이프 = 캘린더 확장 (month 모드로)
-      if (calendarViewMode === 'week') {
-        setCalendarViewMode('month');
+      // 아래로 스와이프 = 이전 달로 (월간 뷰에서만)
+      if (calendarViewMode === 'month') {
+        handlePreviousMonth();
       }
     },
     trackMouse: true,
@@ -393,7 +437,7 @@ export default function Home() {
                 return (
                   <div 
                     key={index} 
-                    className="bg-white rounded-xl p-4 shadow-md border border-gray-100 flex items-center gap-3"
+                    className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 flex items-center gap-3"
                   >
                     {/* 아바타 */}
                     <div className={`w-10 h-10 rounded-full ${avatarBg} ${avatarText} flex items-center justify-center font-semibold text-sm flex-shrink-0 overflow-hidden`}>
@@ -401,7 +445,7 @@ export default function Home() {
                         <img
                           src={transaction.avatarUrl}
                           alt={transaction.person}
-                          className="w-full h-full object-cover"
+                          className="w-full h-full object-cover brightness-[0.97] saturate-[0.9]"
                         />
                       ) : (
                         initial
@@ -412,7 +456,7 @@ export default function Home() {
                     <div className="flex-1 flex items-center justify-between">
                       {/* 왼쪽: 이름 + 타입 */}
                       <div>
-                        <div className="text-sm font-semibold text-gray-900">
+                        <div className="text-sm font-medium text-gray-900">
                           {transaction.person}
                         </div>
                         <div className="text-xs text-gray-500 mt-0.5">
@@ -422,7 +466,7 @@ export default function Home() {
 
                       {/* 오른쪽: 금액 */}
                       <div
-                        className={`text-lg font-bold ${
+                        className={`text-lg font-medium ${
                           transaction.type === "income" ? "text-toss-blue" : "text-toss-red"
                         }`}
                       >
@@ -444,6 +488,17 @@ export default function Home() {
 
       {/* 사이드 메뉴 */}
       <SideMenu isOpen={isSideMenuOpen} onClose={() => setIsSideMenuOpen(false)} />
+
+      {/* 커플 초대 바텀 시트 */}
+      <CoupleInviteSheet
+        isOpen={isInviteSheetOpen}
+        onClose={() => setIsInviteSheetOpen(false)}
+        onSuccess={() => {
+          setIsCoupleConnected(true);
+          // 성공 시 재무 데이터 새로고침
+          window.location.reload();
+        }}
+      />
     </div>
   );
 }

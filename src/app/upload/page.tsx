@@ -3,17 +3,20 @@
 import { useState, useEffect, useRef } from 'react';
 import { format, subMonths } from 'date-fns';
 import { ko } from 'date-fns/locale';
-import { Upload, X, Calendar, PieChart, ChevronDown } from 'lucide-react';
+import { Upload, X, Calendar, PieChart, ChevronDown, Check, Loader2 } from 'lucide-react';
+import { compressImage, formatFileSize, type CompressedImage } from '@/lib/image-utils';
 
 interface ImageUploadSlotProps {
   title: string;
   description: string;
   icon: React.ReactNode;
   image: File | null;
-  onUpload: (file: File) => void;
+  compressInfo?: CompressedImage | null;
+  onUpload: (file: File, compressed: CompressedImage) => void;
   onRemove: () => void;
   isRequired?: boolean;
   guideText: string;
+  isCompressing?: boolean;
 }
 
 function ImageUploadSlot({
@@ -21,23 +24,40 @@ function ImageUploadSlot({
   description,
   icon,
   image,
+  compressInfo,
   onUpload,
   onRemove,
   isRequired = false,
   guideText,
+  isCompressing = false,
 }: ImageUploadSlotProps) {
   const [preview, setPreview] = useState<string | null>(null);
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      onUpload(file);
       // 미리보기 생성
       const reader = new FileReader();
       reader.onloadend = () => {
         setPreview(reader.result as string);
       };
       reader.readAsDataURL(file);
+
+      try {
+        // 이미지 압축
+        const compressed = await compressImage(file);
+        onUpload(file, compressed);
+      } catch (err) {
+        console.error('이미지 압축 실패:', err);
+        // 압축 실패 시 원본 사용
+        onUpload(file, {
+          file,
+          originalSize: file.size,
+          compressedSize: file.size,
+          width: 0,
+          height: 0,
+        });
+      }
     }
   };
 
@@ -53,7 +73,7 @@ function ImageUploadSlot({
         <div className="flex items-center gap-2">
           <div className="text-gray-700">{icon}</div>
           <div>
-            <h3 className="font-semibold text-gray-900 text-sm">{title}</h3>
+            <h3 className="font-medium text-gray-900 text-sm">{title}</h3>
             <p className="text-xs text-gray-500 mt-0.5">{guideText}</p>
           </div>
         </div>
@@ -83,20 +103,76 @@ function ImageUploadSlot({
                   className="w-full h-full object-cover"
                 />
               )}
+              {isCompressing && (
+                <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                  <Loader2 className="w-8 h-8 text-white animate-spin" />
+                </div>
+              )}
             </div>
             <button
               onClick={handleRemove}
-              className="absolute -top-2 -right-2 w-8 h-8 bg-gray-700 hover:bg-gray-800 text-white rounded-full flex items-center justify-center shadow-lg transition-colors"
+              className="absolute -top-2 -right-2 w-8 h-8 bg-gray-900 hover:bg-gray-800 text-white rounded-full flex items-center justify-center shadow-lg transition-colors"
             >
               <X size={18} />
             </button>
             <div className="mt-2 flex items-center justify-center gap-2">
               <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-              <span className="text-xs text-green-600 font-medium">업로드 완료</span>
+              <span className="text-xs text-green-600 font-medium">
+                준비 완료
+                {compressInfo && compressInfo.originalSize > compressInfo.compressedSize && (
+                  <span className="text-gray-400 ml-1">
+                    ({formatFileSize(compressInfo.originalSize)} → {formatFileSize(compressInfo.compressedSize)})
+                  </span>
+                )}
+              </span>
             </div>
           </div>
         )}
       </div>
+    </div>
+  );
+}
+
+// 단계별 진행 상태 컴포넌트
+interface ProcessStepProps {
+  step: number;
+  currentStep: number;
+  label: string;
+  isError?: boolean;
+}
+
+function ProcessStep({ step, currentStep, label, isError }: ProcessStepProps) {
+  const isCompleted = currentStep > step;
+  const isActive = currentStep === step;
+
+  return (
+    <div className="flex items-center gap-3">
+      <div
+        className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium transition-all ${
+          isError && isActive
+            ? 'bg-red-100 text-red-600 border-2 border-red-300'
+            : isCompleted
+            ? 'bg-green-500 text-white'
+            : isActive
+            ? 'bg-[#3182F6] text-white animate-pulse'
+            : 'bg-gray-200 text-gray-400'
+        }`}
+      >
+        {isCompleted ? <Check size={14} /> : isActive && !isError ? <Loader2 size={14} className="animate-spin" /> : step}
+      </div>
+      <span
+        className={`text-sm transition-colors ${
+          isError && isActive
+            ? 'text-red-600 font-medium'
+            : isCompleted
+            ? 'text-gray-900 font-medium'
+            : isActive
+            ? 'text-gray-900 font-medium'
+            : 'text-gray-400'
+        }`}
+      >
+        {label}
+      </span>
     </div>
   );
 }
@@ -108,9 +184,11 @@ export default function UploadPage() {
   const [selectedMonth, setSelectedMonth] = useState<Date>(today);
   const [calendarImage, setCalendarImage] = useState<File | null>(null);
   const [categoryImage, setCategoryImage] = useState<File | null>(null);
+  const [calendarCompressInfo, setCalendarCompressInfo] = useState<CompressedImage | null>(null);
+  const [categoryCompressInfo, setCategoryCompressInfo] = useState<CompressedImage | null>(null);
   const [showMonthPicker, setShowMonthPicker] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState<string>('');
+  const [currentProcessStep, setCurrentProcessStep] = useState(0);
   const [error, setError] = useState<string>('');
   const monthPickerRef = useRef<HTMLDivElement>(null);
 
@@ -156,20 +234,19 @@ export default function UploadPage() {
     
     setIsProcessing(true);
     setError('');
+    setCurrentProcessStep(1);
     
     try {
       const year = selectedMonth.getFullYear();
       const month = selectedMonth.getMonth() + 1;
 
-      // 1. 이미지 업로드
-      setUploadProgress('이미지 업로드 중...');
-      
+      // 1단계: 이미지 업로드
       const uploadedImages: Array<{ url: string; type: 'calendar' | 'analysis' }> = [];
 
-      // 캘린더 이미지 업로드
-      if (calendarImage) {
+      // 캘린더 이미지 업로드 (압축된 파일 사용)
+      if (calendarCompressInfo) {
         const formData = new FormData();
-        formData.append('file', calendarImage);
+        formData.append('file', calendarCompressInfo.file);
         formData.append('year', year.toString());
         formData.append('month', month.toString());
         formData.append('type', 'calendar');
@@ -182,7 +259,6 @@ export default function UploadPage() {
         if (!uploadRes.ok) {
           const errorData = await uploadRes.json().catch(() => ({ error: '알 수 없는 오류' }));
           
-          // 401 에러인 경우 로그인 페이지로 이동
           if (uploadRes.status === 401) {
             alert('로그인이 필요합니다. 로그인 페이지로 이동합니다.');
             window.location.href = '/login';
@@ -196,10 +272,10 @@ export default function UploadPage() {
         uploadedImages.push({ url: uploadData.url, type: 'calendar' });
       }
 
-      // 카테고리 이미지 업로드
-      if (categoryImage) {
+      // 카테고리 이미지 업로드 (압축된 파일 사용)
+      if (categoryCompressInfo) {
         const formData = new FormData();
-        formData.append('file', categoryImage);
+        formData.append('file', categoryCompressInfo.file);
         formData.append('year', year.toString());
         formData.append('month', month.toString());
         formData.append('type', 'analysis');
@@ -212,7 +288,6 @@ export default function UploadPage() {
         if (!uploadRes.ok) {
           const errorData = await uploadRes.json().catch(() => ({ error: '알 수 없는 오류' }));
           
-          // 401 에러인 경우 로그인 페이지로 이동
           if (uploadRes.status === 401) {
             alert('로그인이 필요합니다. 로그인 페이지로 이동합니다.');
             window.location.href = '/login';
@@ -226,8 +301,8 @@ export default function UploadPage() {
         uploadedImages.push({ url: uploadData.url, type: 'analysis' });
       }
 
-      // 2. GPT 분석 및 저장
-      setUploadProgress('AI가 이미지를 분석하고 있습니다...');
+      // 2단계: AI 분석 시작
+      setCurrentProcessStep(2);
       
       const processRes = await fetch('/api/process-images', {
         method: 'POST',
@@ -246,10 +321,11 @@ export default function UploadPage() {
         throw new Error(errorData.details || errorData.error || 'AI 분석 실패');
       }
 
-      const processData = await processRes.json();
+      // 3단계: 데이터 저장 완료
+      setCurrentProcessStep(3);
 
-      // 3. 성공
-      setUploadProgress('완료! 홈 화면으로 이동합니다...');
+      // 4단계: 완료
+      setCurrentProcessStep(4);
       
       // 선택된 월을 localStorage에 저장
       localStorage.setItem('currentMonth', `${year}-${month}`);
@@ -257,13 +333,12 @@ export default function UploadPage() {
       // 홈 화면으로 이동
       setTimeout(() => {
         window.location.href = '/';
-      }, 1000);
+      }, 1500);
 
     } catch (err) {
       console.error('처리 오류:', err);
       setError(err instanceof Error ? err.message : '알 수 없는 오류가 발생했습니다.');
       setIsProcessing(false);
-      setUploadProgress('');
     }
   };
 
@@ -271,7 +346,7 @@ export default function UploadPage() {
     <div className="fixed inset-0 bg-white flex flex-col overscroll-none">
       {/* Header - flex-none으로 고정 */}
       <div className="flex-none bg-white border-b border-gray-100 z-50" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
-        <div className="h-[100px] max-w-[430px] mx-auto px-4 flex flex-col justify-end pb-4">
+        <div className="h-[90px] max-w-[430px] mx-auto px-4 flex flex-col justify-end pb-4">
           <h1 className="text-3xl font-bold text-gray-900">
             데이터 업로드
           </h1>
@@ -315,7 +390,7 @@ export default function UploadPage() {
                       }}
                       className={`w-full px-4 py-3 text-left hover:bg-gray-50 transition-colors ${
                         format(month, 'yyyy-MM') === format(selectedMonth, 'yyyy-MM')
-                          ? 'bg-blue-50 text-blue-600 font-semibold'
+                          ? 'bg-[#EBF4FF] text-[#3182F6] font-medium'
                           : 'text-gray-700'
                       }`}
                     >
@@ -333,46 +408,80 @@ export default function UploadPage() {
             description="토스의 월간 캘린더 화면"
             icon={<Calendar size={20} />}
             image={calendarImage}
-            onUpload={setCalendarImage}
-            onRemove={() => setCalendarImage(null)}
+            compressInfo={calendarCompressInfo}
+            onUpload={(file, compressed) => {
+              setCalendarImage(file);
+              setCalendarCompressInfo(compressed);
+            }}
+            onRemove={() => {
+              setCalendarImage(null);
+              setCalendarCompressInfo(null);
+            }}
             isRequired={true}
             guideText={`토스 홈 화면 > ${selectedMonthNumber}월에 쓴 돈 > 내역 더 보기`}
           />
 
           {/* 이미지 업로드 슬롯 2 */}
           <ImageUploadSlot
-            title="월간 카테고리별 소비 분석"
-            description="토스의 소비 분석 화면"
+            title="카테고리별 소비"
+            description="토스의 카테고리별 소비 화면"
             icon={<PieChart size={20} />}
             image={categoryImage}
-            onUpload={setCategoryImage}
-            onRemove={() => setCategoryImage(null)}
+            compressInfo={categoryCompressInfo}
+            onUpload={(file, compressed) => {
+              setCategoryImage(file);
+              setCategoryCompressInfo(compressed);
+            }}
+            onRemove={() => {
+              setCategoryImage(null);
+              setCategoryCompressInfo(null);
+            }}
             isRequired={true}
-            guideText={`토스 홈 화면 > ${selectedMonthNumber}월에 쓴 돈 > 내역 더 보기 > 소비 분석 더보기`}
+            guideText={`토스 홈 > ${selectedMonthNumber}월에 쓴 돈 > 카테고리별 소비`}
           />
 
-          {/* 처리 버튼 */}
-          <button
-            onClick={handleProcess}
-            disabled={!canProcess || isProcessing}
-            className={`w-full py-4 rounded-xl font-bold text-lg transition-all ${
-              canProcess && !isProcessing
-                ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/30 active:scale-[0.98]'
-                : 'bg-gray-200 text-gray-400 cursor-not-allowed'
-            }`}
-          >
-            {isProcessing ? uploadProgress : '데이터 인식 시작'}
-          </button>
+          {/* 처리 버튼 또는 진행 상태 */}
+          {!isProcessing ? (
+            <button
+              onClick={handleProcess}
+              disabled={!canProcess}
+              className={`w-full py-4 rounded-xl font-semibold text-lg transition-colors ${
+                canProcess
+                  ? 'bg-[#3182F6] hover:bg-[#1C6DD0] text-white'
+                  : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+              }`}
+            >
+              데이터 인식 시작
+            </button>
+          ) : (
+            <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
+              <div className="space-y-4">
+                <ProcessStep step={1} currentStep={currentProcessStep} label="이미지 업로드" isError={!!error && currentProcessStep === 1} />
+                <ProcessStep step={2} currentStep={currentProcessStep} label="AI 이미지 분석" isError={!!error && currentProcessStep === 2} />
+                <ProcessStep step={3} currentStep={currentProcessStep} label="데이터 저장" isError={!!error && currentProcessStep === 3} />
+                <ProcessStep step={4} currentStep={currentProcessStep} label="완료" isError={!!error && currentProcessStep === 4} />
+              </div>
+              {currentProcessStep === 4 && !error && (
+                <p className="text-sm text-green-600 font-medium mt-4 text-center">
+                  잠시 후 홈 화면으로 이동합니다...
+                </p>
+              )}
+            </div>
+          )}
 
           {/* 에러 메시지 */}
           {error && (
             <div className="bg-red-50 border border-red-200 rounded-xl p-4">
-              <p className="text-sm text-red-600 font-medium">❌ {error}</p>
+              <p className="text-sm text-red-600 font-medium">{error}</p>
               <button
-                onClick={() => setError('')}
-                className="mt-2 text-xs text-red-500 underline"
+                onClick={() => {
+                  setError('');
+                  setIsProcessing(false);
+                  setCurrentProcessStep(0);
+                }}
+                className="mt-2 text-sm text-red-500 underline"
               >
-                닫기
+                다시 시도
               </button>
             </div>
           )}

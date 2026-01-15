@@ -11,12 +11,11 @@
   <!-- 중앙 겹치는 영역 강조 (더 밝은 흰색) -->
   <ellipse cx="90" cy="90" rx="25" ry="45" fill="#FFFFFF" opacity="0.3"/>
   
-  <!-- 그라디언트 정의: 따뜻한 코랄에서 피치톤으로 -->
+  <!-- 그라디언트 정의: 블루에서 퍼플로 -->
   <defs>
     <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#FF6B9D"/>
-      <stop offset="50%" stop-color="#FFA07A"/>
-      <stop offset="100%" stop-color="#FFB6A3"/>
+      <stop offset="0%" stop-color="#3B82F6"/>
+      <stop offset="100%" stop-color="#9333EA"/>
     </linearGradient>
   </defs>
 </svg>

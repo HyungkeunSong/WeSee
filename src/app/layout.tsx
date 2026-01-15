@@ -19,7 +19,7 @@ export const metadata: Metadata = {
   description: "개인의 자동화된 자산관리 데이터를 부부 단위로 자연스럽게 공유하고, 대화 가능한 월간 재무 요약으로 바꿔주는 앱",
   icons: {
     icon: '/favicon.svg',
-    apple: '/favicon.svg',
+    apple: '/icon-180.png',
   },
   manifest: '/manifest.json',
   appleWebApp: {
