@@ -206,7 +206,7 @@ export default function ProfilePage() {
     <>
       <CoupleConnectionGuide />
       
-      <div className="fixed inset-0 bg-gray-50 flex flex-col overflow-hidden">
+      <div className="fixed inset-0 bg-gray-50 flex flex-col overscroll-none">
         {/* Header */}
         <div 
           className="flex-none bg-white border-b border-gray-100 px-4 py-4 z-10"
@@ -224,7 +224,10 @@ export default function ProfilePage() {
         </div>
 
         {/* Content - Scrollable 영역 */}
-        <div className="flex-1 overflow-y-auto overscroll-contain" style={{ paddingBottom: 'calc(50px + env(safe-area-inset-bottom, 0px))' }}>
+        <div 
+          className="flex-1 overflow-y-auto overscroll-contain"
+          style={{ paddingBottom: 'calc(50px + env(safe-area-inset-bottom, 0px))' }}
+        >
           <div className="max-w-lg mx-auto px-4 py-5 space-y-4">
             {/* 프로필 정보 */}
             <div className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">

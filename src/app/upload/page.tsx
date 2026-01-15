@@ -343,7 +343,7 @@ export default function UploadPage() {
   };
 
   return (
-    <div className="fixed inset-0 bg-white flex flex-col overflow-hidden">
+    <div className="fixed inset-0 bg-white flex flex-col overscroll-none">
       {/* Header - flex-none으로 고정 */}
       <div className="flex-none bg-white border-b border-gray-100 z-50" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
         <div className="h-[90px] max-w-[430px] mx-auto px-4 flex flex-col justify-end pb-4">

@@ -168,7 +168,7 @@ export default function AnalysisPage() {
   );
 
   return (
-    <div className="fixed inset-0 bg-white flex flex-col overflow-hidden">
+    <div className="fixed inset-0 bg-white flex flex-col overscroll-none">
       <Header />
 
       <div className="flex-1 overflow-y-auto bg-gray-50 overscroll-contain relative" style={{ paddingBottom: 'calc(50px + env(safe-area-inset-bottom, 0px))' }}>

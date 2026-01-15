@@ -27,11 +27,9 @@ export default function BottomNav() {
 
   return (
     <nav 
-      className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200"
-      style={{ 
-        paddingBottom: 'env(safe-area-inset-bottom, 0px)',
-        transform: 'translateZ(0)',
-        WebkitTransform: 'translateZ(0)',
+      className="fixed bottom-0 left-0 right-0 z-40 touch-none select-none bg-white border-t border-gray-100 shadow-[0_-2px_8px_rgba(0,0,0,0.02)]"
+      style={{
+        paddingBottom: 'env(safe-area-inset-bottom, 0px)'
       }}
     >
       <div className="flex items-center max-w-[430px] mx-auto h-[50px]">
@@ -50,7 +48,7 @@ export default function BottomNav() {
               }`}
             >
               <Icon className="w-[22px] h-[22px]" strokeWidth={isActive ? 2.2 : 1.8} />
-              <span className="text-[10px] font-medium mt-0.5">{item.name}</span>
+              <span className="text-[10px] font-medium mt-1">{item.name}</span>
             </Link>
           );
         })}

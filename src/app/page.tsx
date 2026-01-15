@@ -196,6 +196,7 @@ export default function Home() {
   // 캘린더 영역 스와이프 핸들러 - 좌우로 월/주 이동, 상하로 월 이동 (월간 뷰에서만)
   const calendarSwipeHandlers = useSwipeable({
     onSwipedLeft: () => {
+      // 주간 뷰: 다음 주로, 월간 뷰: 다음 달로
       if (calendarViewMode === 'week') {
         handleNextWeek();
       } else {
@@ -203,6 +204,7 @@ export default function Home() {
       }
     },
     onSwipedRight: () => {
+      // 주간 뷰: 이전 주로, 월간 뷰: 이전 달로
       if (calendarViewMode === 'week') {
         handlePreviousWeek();
       } else {
@@ -223,13 +225,34 @@ export default function Home() {
     },
     trackMouse: true,
     preventScrollOnSwipe: true,
-    delta: 30,
+    delta: 30, // 최소 스와이프 거리
   });
   
-  // 디테일뷰 ref
+  // 디테일뷰 스와이프 핸들러 - 스크롤이 맨 위일 때만 뷰 모드 전환
+  const detailSwipeHandlersRaw = useSwipeable({
+    onSwipedUp: () => {
+      // 위로 스와이프: 월간 모드일 때 주간 모드로 축소 (디테일뷰 확장 의도)
+      if (calendarViewMode === 'month') {
+        setCalendarViewMode('week');
+      }
+    },
+    onSwipedDown: () => {
+      // 아래로 스와이프: 주간 모드일 때 월간 모드로 확장 (디테일뷰 축소 의도)
+      if (calendarViewMode === 'week') {
+        setCalendarViewMode('month');
+      }
+    },
+    trackMouse: true,
+    preventScrollOnSwipe: false, // 스크롤 허용
+    delta: 50, // 의도적인 스와이프만 감지 (더 큰 delta)
+  });
+  
+  // ref 분리 및 합치기
+  const { ref: swipeRef, ...detailSwipeHandlers } = detailSwipeHandlersRaw;
   const combinedDetailRef = useCallback((el: HTMLDivElement | null) => {
     detailRef.current = el;
-  }, []);
+    swipeRef(el);
+  }, [swipeRef]);
   
 
   // 선택된 날짜의 상세 데이터 가져오기
@@ -304,7 +327,7 @@ export default function Home() {
   };
 
   return (
-    <div className="fixed inset-0 bg-white flex flex-col overflow-hidden">
+    <div className="fixed inset-0 bg-white flex flex-col overscroll-none">
       {/* Header + Calendar Area - flex-none으로 상단 고정 */}
       <div className="flex-none bg-white z-30 shadow-sm" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
         {/* Header */}
@@ -359,7 +382,7 @@ export default function Home() {
         {/* 캘린더 영역 */}
         <div 
           {...calendarSwipeHandlers}
-          className="flex-none border-t border-gray-100"
+          className="flex-none transition-all duration-300 ease-out border-t border-gray-100"
         >
           <MonthCalendar
             currentDate={currentDate}
@@ -384,9 +407,10 @@ export default function Home() {
         </button>
       </div>
 
-      {/* 상세 내역 영역 */}
+      {/* 상세 내역 영역 - 하단 GNB 높이만큼 패딩 확보 */}
       <div 
         ref={combinedDetailRef}
+        {...detailSwipeHandlers}
         className="flex-1 bg-white overflow-y-auto overscroll-contain"
         style={{ paddingBottom: 'calc(50px + env(safe-area-inset-bottom, 0px))' }}
       >
