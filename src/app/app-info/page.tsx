@@ -5,7 +5,7 @@ import Link from 'next/link';
 
 export default function AppInfoPage() {
   return (
-    <div className="fixed inset-0 bg-gray-50 flex flex-col overscroll-none">
+    <div className="absolute inset-0 bg-gray-50 flex flex-col overflow-hidden">
       {/* Header - Sticky 고정 및 높이 조정 (다이나믹 아일랜드 대응) */}
       <div 
         className="flex-none bg-white border-b border-gray-100 px-5 py-6 z-10"
@@ -25,7 +25,6 @@ export default function AppInfoPage() {
       {/* Content - Scrollable 영역 */}
       <div 
         className="flex-1 overflow-y-auto overscroll-contain"
-        style={{ paddingBottom: 'calc(50px + env(safe-area-inset-bottom, 0px))' }}
       >
         <div className="max-w-lg mx-auto px-5 py-6 space-y-6">
           {/* 앱 로고 및 이름 */}

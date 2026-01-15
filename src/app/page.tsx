@@ -327,7 +327,7 @@ export default function Home() {
   };
 
   return (
-    <div className="fixed inset-0 bg-white flex flex-col overscroll-none">
+    <div className="absolute inset-0 bg-white flex flex-col overflow-hidden">
       {/* Header + Calendar Area - flex-none으로 상단 고정 */}
       <div className="flex-none bg-white z-30 shadow-sm" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
         {/* Header */}
@@ -412,7 +412,6 @@ export default function Home() {
         ref={combinedDetailRef}
         {...detailSwipeHandlers}
         className="flex-1 bg-white overflow-y-auto overscroll-contain"
-        style={{ paddingBottom: 'calc(50px + env(safe-area-inset-bottom, 0px))' }}
       >
         {selectedDayData && selectedDayData.breakdown.length > 0 ? (
           <div className="px-4 pt-4 pb-4">

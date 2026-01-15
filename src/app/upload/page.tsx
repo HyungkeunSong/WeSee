@@ -343,7 +343,7 @@ export default function UploadPage() {
   };
 
   return (
-    <div className="fixed inset-0 bg-white flex flex-col overscroll-none">
+    <div className="absolute inset-0 bg-white flex flex-col overflow-hidden">
       {/* Header - flex-none으로 고정 */}
       <div className="flex-none bg-white border-b border-gray-100 z-50" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
         <div className="h-[90px] max-w-[430px] mx-auto px-4 flex flex-col justify-end pb-4">
@@ -354,7 +354,7 @@ export default function UploadPage() {
       </div>
 
       {/* 컨텐츠 - 여기만 스크롤 */}
-      <div className="flex-1 overflow-y-auto bg-gray-50 p-4 space-y-4 overscroll-contain" style={{ paddingBottom: 'calc(50px + env(safe-area-inset-bottom, 0px))' }}>
+      <div className="flex-1 overflow-y-auto bg-gray-50 p-4 space-y-4 overscroll-contain">
         <div className="max-w-lg mx-auto w-full space-y-4">
           {/* 월 선택 */}
           <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
