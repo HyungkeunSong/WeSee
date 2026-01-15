@@ -193,7 +193,7 @@ export default function Home() {
     setCalendarViewMode(prev => prev === 'month' ? 'week' : 'month');
   };
 
-  // 캘린더 영역 스와이프 핸들러 - 좌우로 월/주 이동
+  // 캘린더 영역 스와이프 핸들러 - 좌우로 월/주 이동, 상하로 월 이동 (월간 뷰에서만)
   const calendarSwipeHandlers = useSwipeable({
     onSwipedLeft: () => {
       if (calendarViewMode === 'week') {
@@ -206,6 +206,18 @@ export default function Home() {
       if (calendarViewMode === 'week') {
         handlePreviousWeek();
       } else {
+        handlePreviousMonth();
+      }
+    },
+    onSwipedUp: () => {
+      // 위로 스와이프 = 다음 달로 (월간 뷰에서만)
+      if (calendarViewMode === 'month') {
+        handleNextMonth();
+      }
+    },
+    onSwipedDown: () => {
+      // 아래로 스와이프 = 이전 달로 (월간 뷰에서만)
+      if (calendarViewMode === 'month') {
         handlePreviousMonth();
       }
     },
