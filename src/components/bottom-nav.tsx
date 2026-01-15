@@ -29,7 +29,8 @@ export default function BottomNav() {
     <nav 
       className="flex-none bg-white border-t border-gray-200"
       style={{
-        paddingBottom: 'env(safe-area-inset-bottom)'
+        paddingBottom: 'env(safe-area-inset-bottom)',
+        touchAction: 'none',
       }}
     >
       <div className="flex items-center max-w-lg mx-auto px-2 h-14">
