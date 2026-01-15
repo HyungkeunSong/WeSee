@@ -168,10 +168,10 @@ export default function AnalysisPage() {
   );
 
   return (
-    <div className="fixed inset-0 bg-white flex flex-col overscroll-none">
+    <div className="absolute inset-0 bg-white flex flex-col overflow-hidden">
       <Header />
 
-      <div className="flex-1 overflow-y-auto bg-gray-50 overscroll-contain relative" style={{ paddingBottom: 'calc(44px + min(env(safe-area-inset-bottom, 0px), 20px))' }}>
+      <div className="flex-1 overflow-y-auto bg-gray-50 overscroll-contain relative">
         <div className="max-w-lg mx-auto w-full">
           
           {/* 월 선택 */}
