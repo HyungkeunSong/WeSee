@@ -29,10 +29,10 @@ export default function BottomNav() {
     <nav 
       className="fixed bottom-0 left-0 right-0 z-40 touch-none select-none bg-white border-t border-gray-200"
       style={{
-        paddingBottom: 'env(safe-area-inset-bottom, 0px)'
+        paddingBottom: 'min(env(safe-area-inset-bottom, 0px), 20px)'
       }}
     >
-      <div className="flex items-center max-w-[430px] mx-auto h-[46px]">
+      <div className="flex items-center max-w-[430px] mx-auto h-11">
         {navItems.map((item) => {
           const isActive = pathname === item.href;
           const Icon = item.icon;
