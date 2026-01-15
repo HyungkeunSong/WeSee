@@ -354,30 +354,25 @@ export default function AnalysisPage() {
                 </div>
               ) : (
                 <div className="divide-y divide-gray-100">
-                  {categoryList.map(([category, data], index) => {
-                    const colors = ['bg-blue-500', 'bg-purple-500', 'bg-pink-500', 'bg-orange-500', 'bg-green-500'];
-                    const barColor = colors[index % colors.length];
-                    
-                    return (
-                      <div key={category} className="px-5 py-4 hover:bg-gray-50 transition-colors">
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="font-medium text-gray-900">{category}</span>
-                          <span className="text-lg font-bold text-gray-900">{formatCurrency(data.amount)}</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
-                            <div 
-                              className={`h-full ${barColor} rounded-full transition-all duration-500`}
-                              style={{ width: `${data.percentage}%` }}
-                            />
-                          </div>
-                          <span className="text-sm font-medium text-gray-500 w-12 text-right">
-                            {data.percentage.toFixed(0)}%
-                          </span>
-                        </div>
+                  {categoryList.map(([category, data]) => (
+                    <div key={category} className="px-5 py-4 hover:bg-gray-50 transition-colors">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="font-medium text-gray-900">{category}</span>
+                        <span className="text-lg font-bold text-gray-900">{formatCurrency(data.amount)}</span>
                       </div>
-                    );
-                  })}
+                      <div className="flex items-center gap-2">
+                        <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
+                          <div 
+                            className="h-full bg-[#3182F6] rounded-full transition-all duration-500"
+                            style={{ width: `${data.percentage}%` }}
+                          />
+                        </div>
+                        <span className="text-sm font-medium text-gray-500 w-12 text-right">
+                          {data.percentage.toFixed(0)}%
+                        </span>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               )}
             </div>
