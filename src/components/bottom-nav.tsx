@@ -27,37 +27,32 @@ export default function BottomNav() {
 
   return (
     <nav 
-      className="fixed bottom-0 left-0 right-0 z-50 touch-none select-none"
+      className="fixed bottom-0 left-0 right-0 z-40 touch-none select-none bg-white border-t border-gray-100 shadow-[0_-2px_8px_rgba(0,0,0,0.02)]"
+      style={{
+        paddingBottom: 'env(safe-area-inset-bottom, 0px)'
+      }}
     >
-      {/* GNB 콘텐츠 영역 - 초슬림 디자인 (42px) */}
-      <div className="bg-white/70 backdrop-blur-lg border-t border-gray-100/50">
-        <div className="flex items-center max-w-lg mx-auto h-[42px]">
-          {navItems.map((item) => {
-            const isActive = pathname === item.href;
-            const Icon = item.icon;
+      <div className="flex items-center max-w-[430px] mx-auto h-[50px]">
+        {navItems.map((item) => {
+          const isActive = pathname === item.href;
+          const Icon = item.icon;
 
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`flex flex-col items-center justify-center flex-1 h-full transition-all ${
-                  isActive
-                    ? 'text-[#3182F6]'
-                    : 'text-gray-400 active:scale-90'
-                }`}
-              >
-                <Icon className="w-[18px] h-[18px]" strokeWidth={isActive ? 2.5 : 2} />
-                <span className="text-[8.5px] font-bold mt-0.5 tracking-tighter">{item.name}</span>
-              </Link>
-            );
-          })}
-        </div>
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={`flex flex-col items-center justify-center flex-1 h-full transition-colors ${
+                isActive
+                  ? 'text-[#3182F6]'
+                  : 'text-gray-400 active:text-gray-600'
+              }`}
+            >
+              <Icon className="w-[22px] h-[22px]" strokeWidth={isActive ? 2.2 : 1.8} />
+              <span className="text-[10px] font-medium mt-1">{item.name}</span>
+            </Link>
+          );
+        })}
       </div>
-      {/* Safe area spacer - 투명도 최적화 */}
-      <div 
-        className="bg-white/70 backdrop-blur-lg"
-        style={{ height: 'env(safe-area-inset-bottom, 0px)' }} 
-      />
     </nav>
   );
 }

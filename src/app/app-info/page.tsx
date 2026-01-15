@@ -25,7 +25,7 @@ export default function AppInfoPage() {
       {/* Content - Scrollable 영역 */}
       <div 
         className="flex-1 overflow-y-auto overscroll-contain"
-        style={{ paddingBottom: 'calc(42px + env(safe-area-inset-bottom, 0px))' }}
+        style={{ paddingBottom: 'calc(50px + env(safe-area-inset-bottom, 0px))' }}
       >
         <div className="max-w-lg mx-auto px-5 py-6 space-y-6">
           {/* 앱 로고 및 이름 */}

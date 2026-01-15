@@ -226,7 +226,7 @@ export default function ProfilePage() {
         {/* Content - Scrollable 영역 */}
         <div 
           className="flex-1 overflow-y-auto overscroll-contain"
-          style={{ paddingBottom: 'calc(42px + env(safe-area-inset-bottom, 0px))' }}
+          style={{ paddingBottom: 'calc(50px + env(safe-area-inset-bottom, 0px))' }}
         >
           <div className="max-w-lg mx-auto px-4 py-5 space-y-4">
             {/* 프로필 정보 */}
