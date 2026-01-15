@@ -412,7 +412,7 @@ export default function Home() {
         ref={combinedDetailRef}
         {...detailSwipeHandlers}
         className="flex-1 bg-white overflow-y-auto overscroll-contain"
-        style={{ paddingBottom: 'calc(46px + env(safe-area-inset-bottom, 0px))' }}
+        style={{ paddingBottom: 'calc(42px + env(safe-area-inset-bottom, 0px))' }}
       >
         {selectedDayData && selectedDayData.breakdown.length > 0 ? (
           <div className="px-4 pt-4 pb-4">
