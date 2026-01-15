@@ -15,7 +15,7 @@ export default function LayoutWithNav({ children }: { children: React.ReactNode 
   // GNB가 필요한 페이지: 전체를 하나의 fixed 컨테이너로 감싸서 GNB 움직임 방지
   if (shouldShowNav) {
     return (
-      <div className="fixed inset-0 flex flex-col overflow-hidden">
+      <div className="fixed inset-0 flex flex-col bg-white overflow-hidden">
         <div className="flex-1 relative overflow-hidden">
           {children}
         </div>
