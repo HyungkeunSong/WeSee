@@ -209,9 +209,9 @@ export default function Home() {
         handlePreviousMonth();
       }
     },
-    trackMouse: false,
-    preventScrollOnSwipe: false,
-    delta: 50,
+    trackMouse: true,
+    preventScrollOnSwipe: true,
+    delta: 30,
   });
   
   // 디테일뷰 ref
@@ -292,7 +292,7 @@ export default function Home() {
   };
 
   return (
-    <div className="absolute inset-0 bg-white flex flex-col overflow-hidden">
+    <div className="fixed inset-0 bg-white flex flex-col overflow-hidden">
       {/* Header + Calendar Area - flex-none으로 상단 고정 */}
       <div className="flex-none bg-white z-30 shadow-sm" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
         {/* Header */}
@@ -348,7 +348,6 @@ export default function Home() {
         <div 
           {...calendarSwipeHandlers}
           className="flex-none border-t border-gray-100"
-          style={{ touchAction: 'pan-x' }}
         >
           <MonthCalendar
             currentDate={currentDate}
@@ -377,6 +376,7 @@ export default function Home() {
       <div 
         ref={combinedDetailRef}
         className="flex-1 bg-white overflow-y-auto overscroll-contain"
+        style={{ paddingBottom: 'calc(50px + env(safe-area-inset-bottom, 0px))' }}
       >
         {selectedDayData && selectedDayData.breakdown.length > 0 ? (
           <div className="px-4 pt-4 pb-4">

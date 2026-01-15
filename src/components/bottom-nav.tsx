@@ -27,8 +27,12 @@ export default function BottomNav() {
 
   return (
     <nav 
-      className="flex-none bg-white border-t border-gray-200 touch-none select-none"
-      style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
+      className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200"
+      style={{ 
+        paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+        transform: 'translateZ(0)',
+        WebkitTransform: 'translateZ(0)',
+      }}
     >
       <div className="flex items-center max-w-[430px] mx-auto h-[50px]">
         {navItems.map((item) => {
@@ -45,8 +49,8 @@ export default function BottomNav() {
                   : 'text-gray-400 active:text-gray-600'
               }`}
             >
-              <Icon className="w-6 h-6" strokeWidth={isActive ? 2.2 : 1.8} />
-              <span className="text-[11px] font-medium mt-0.5">{item.name}</span>
+              <Icon className="w-[22px] h-[22px]" strokeWidth={isActive ? 2.2 : 1.8} />
+              <span className="text-[10px] font-medium mt-0.5">{item.name}</span>
             </Link>
           );
         })}

@@ -31,10 +31,6 @@ body {
   height: 100%;
   min-height: 100%;
   -webkit-font-smoothing: antialiased;
-  overflow: hidden;
-  position: fixed;
-  width: 100%;
-  overscroll-behavior: none;
 }
 
 /* Safe Area 지원 (iOS 노치, 홈 인디케이터 등) */
