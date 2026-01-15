@@ -29,7 +29,10 @@ export default function BottomNav() {
     <nav 
       className="fixed bottom-0 left-0 right-0 z-40 touch-none select-none bg-white border-t border-gray-100 shadow-[0_-2px_8px_rgba(0,0,0,0.02)]"
       style={{
-        paddingBottom: 'env(safe-area-inset-bottom, 0px)'
+        paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+        transform: 'translate3d(0,0,0)',
+        WebkitBackfaceVisibility: 'hidden',
+        backfaceVisibility: 'hidden',
       }}
     >
       <div className="flex items-center max-w-[430px] mx-auto h-[50px]">
