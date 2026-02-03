@@ -50,6 +50,13 @@ export async function GET(request: NextRequest) {
     }
 
     // 부부의 재무 기록 조회
+    console.log('[GET] 재무 기록 조회 시작:', {
+      couple_id: coupleData.id,
+      year,
+      month,
+      user_id: user.id,
+    });
+
     const { data: records, error: recordsError } = await supabase
       .from('financial_records')
       .select('*')
@@ -57,8 +64,20 @@ export async function GET(request: NextRequest) {
       .eq('year', year)
       .eq('month', month);
 
+    console.log('[GET] 재무 기록 조회 결과:', {
+      recordsCount: records?.length || 0,
+      records: records?.map(r => ({
+        id: r.id,
+        user_id: r.user_id,
+        year: r.year,
+        month: r.month,
+        updated_at: r.updated_at,
+        dailyTransactionsCount: Object.keys(r.data?.dailyTransactions || {}).length,
+      })),
+    });
+
     if (recordsError) {
-      console.error('재무 기록 조회 오류:', recordsError);
+      console.error('[GET] 재무 기록 조회 오류:', recordsError);
       return NextResponse.json(
         { error: '데이터 조회에 실패했습니다.' },
         { status: 500 }

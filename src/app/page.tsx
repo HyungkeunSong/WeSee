@@ -4,12 +4,14 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { format, addMonths, subMonths, addWeeks, subWeeks, isSameMonth, endOfMonth, isAfter, isBefore, subYears } from "date-fns";
 import { ko } from "date-fns/locale";
 import { useSwipeable } from "react-swipeable";
-import { Menu, ChevronDown, ChevronUp } from "lucide-react";
+import { Menu, ChevronDown, ChevronUp, RefreshCw } from "lucide-react";
 import { MonthCalendar } from "@/components/month-calendar";
 import { SideMenu } from "@/components/side-menu";
 import { CoupleInviteSheet } from "@/components/couple-invite-sheet";
 import { useFinancialData } from "@/hooks/useFinancialData";
 import { useProfile } from "@/hooks/useProfile";
+import { useQueryClient } from "@tanstack/react-query";
+import { useSearchParams } from "next/navigation";
 
 // 날짜별 수입/지출 데이터 타입
 interface DayData {
@@ -30,6 +32,8 @@ import type { FinancialRecordsResponse } from "@/hooks/useFinancialData";
 
 export default function Home() {
   const today = new Date();
+  const queryClient = useQueryClient();
+  const searchParams = useSearchParams();
   
   // 초기값은 항상 today로 설정 (SSR/CSR 일치)
   const [currentDate, setCurrentDate] = useState<Date>(today);
@@ -44,11 +48,31 @@ export default function Home() {
   // 캘린더 뷰 모드: 'month' | 'week'
   const [calendarViewMode, setCalendarViewMode] = useState<'month' | 'week'>('month');
   
+  // Pull-to-Refresh 상태
+  const [isPulling, setIsPulling] = useState(false);
+  const [pullDistance, setPullDistance] = useState(0);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const pullStartY = useRef(0);
+  const containerRef = useRef<HTMLDivElement>(null);
+  
   // 디테일뷰 ref (스와이프 감지용)
   const detailRef = useRef<HTMLDivElement>(null);
 
   // React Query로 재무 데이터 로드 (캐싱 + prefetching 자동 처리)
-  const { data: financialData, isLoading } = useFinancialData(currentDate);
+  const { data: financialData, isLoading, refetch } = useFinancialData(currentDate);
+  
+  // 업로드 후 돌아왔을 때 캐시 무효화 (refresh 파라미터 감지)
+  useEffect(() => {
+    const refreshParam = searchParams.get('refresh');
+    if (refreshParam) {
+      // 모든 financial-records 캐시 무효화 후 다시 fetch
+      queryClient.invalidateQueries({ queryKey: ['financial-records'] }).then(() => {
+        refetch();
+      });
+      // URL에서 refresh 파라미터 제거 (히스토리 깨끗하게 유지)
+      window.history.replaceState({}, '', '/');
+    }
+  }, [searchParams, queryClient, refetch]);
   
   // 프로필 데이터 미리 로드 (사이드 메뉴에서 즉시 표시하기 위함)
   useProfile();
@@ -193,6 +217,61 @@ export default function Home() {
     setCalendarViewMode(prev => prev === 'month' ? 'week' : 'month');
   };
 
+  // Pull-to-Refresh 핸들러
+  const PULL_THRESHOLD = 80; // 새로고침 트리거 거리
+  const MAX_PULL = 120; // 최대 당김 거리
+
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    // 스크롤이 맨 위일 때만 Pull-to-Refresh 활성화
+    if (containerRef.current && containerRef.current.scrollTop === 0) {
+      pullStartY.current = e.touches[0].clientY;
+      setIsPulling(true);
+    }
+  }, []);
+
+  const handleTouchMove = useCallback((e: React.TouchEvent) => {
+    if (!isPulling || isRefreshing) return;
+    
+    const currentY = e.touches[0].clientY;
+    const diff = currentY - pullStartY.current;
+    
+    if (diff > 0) {
+      // 저항감 적용 (당길수록 덜 움직임)
+      const resistance = 0.4;
+      const distance = Math.min(diff * resistance, MAX_PULL);
+      setPullDistance(distance);
+    }
+  }, [isPulling, isRefreshing]);
+
+  const handleTouchEnd = useCallback(async () => {
+    if (!isPulling) return;
+    
+    if (pullDistance >= PULL_THRESHOLD && !isRefreshing) {
+      // 새로고침 실행
+      setIsRefreshing(true);
+      setPullDistance(PULL_THRESHOLD); // 고정 위치로
+      
+      try {
+        // 캐시 무효화 후 refetch
+        await queryClient.invalidateQueries({ queryKey: ['financial-records'] });
+        await refetch();
+      } catch (error) {
+        console.error('새로고침 실패:', error);
+      } finally {
+        // 애니메이션 후 상태 초기화
+        setTimeout(() => {
+          setIsRefreshing(false);
+          setPullDistance(0);
+          setIsPulling(false);
+        }, 300);
+      }
+    } else {
+      // 임계값 미달 - 원래 위치로
+      setPullDistance(0);
+      setIsPulling(false);
+    }
+  }, [isPulling, pullDistance, isRefreshing, queryClient, refetch]);
+
   // 캘린더 영역 스와이프 핸들러 - 좌우로 월/주 이동, 상하로 월 이동 (월간 뷰에서만)
   const calendarSwipeHandlers = useSwipeable({
     onSwipedLeft: () => {
@@ -327,9 +406,39 @@ export default function Home() {
   };
 
   return (
-    <div className="absolute inset-0 bg-white flex flex-col overflow-hidden">
+    <div 
+      ref={containerRef}
+      className="absolute inset-0 bg-white flex flex-col overflow-hidden"
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+    >
+      {/* Pull-to-Refresh 인디케이터 */}
+      <div 
+        className="absolute left-0 right-0 flex items-center justify-center z-50 transition-all duration-200 pointer-events-none"
+        style={{ 
+          top: `calc(env(safe-area-inset-top) + ${pullDistance - 50}px)`,
+          opacity: pullDistance > 20 ? 1 : 0,
+        }}
+      >
+        <div className={`w-10 h-10 rounded-full bg-white shadow-lg flex items-center justify-center ${isRefreshing ? 'animate-spin' : ''}`}>
+          <RefreshCw 
+            size={20} 
+            className={`text-[#3182F6] transition-transform duration-200 ${
+              pullDistance >= PULL_THRESHOLD ? 'rotate-180' : ''
+            }`}
+          />
+        </div>
+      </div>
+
       {/* Header + Calendar Area - flex-none으로 상단 고정 */}
-      <div className="flex-none bg-white z-30 shadow-sm" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
+      <div 
+        className="flex-none bg-white z-30 shadow-sm transition-transform duration-200" 
+        style={{ 
+          paddingTop: 'env(safe-area-inset-top)',
+          transform: `translateY(${pullDistance}px)`,
+        }}
+      >
         {/* Header */}
         <div className="bg-white px-4 py-4">
           {/* 년도 표시 */}
@@ -411,7 +520,8 @@ export default function Home() {
       <div 
         ref={combinedDetailRef}
         {...detailSwipeHandlers}
-        className="flex-1 bg-white overflow-y-auto overscroll-contain"
+        className="flex-1 bg-white overflow-y-auto overscroll-contain transition-transform duration-200"
+        style={{ transform: `translateY(${pullDistance}px)` }}
       >
         {selectedDayData && selectedDayData.breakdown.length > 0 ? (
           <div className="px-4 pt-4 pb-4">

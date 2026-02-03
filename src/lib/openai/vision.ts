@@ -120,15 +120,22 @@ export async function analyzeMultipleImages(
   const calendarResult = results.find(r => r.type === 'calendar');
   const analysisResult = results.find(r => r.type === 'analysis');
 
-  // GPT가 읽은 연도/월 또는 사용자가 선택한 연도/월 사용
-  const year = calendarResult?.data.year || analysisResult?.data.year || fallbackYear;
-  const month = calendarResult?.data.month || analysisResult?.data.month || fallbackMonth;
+  // 사용자가 선택한 연도/월을 우선 사용 (AI가 잘못 읽을 수 있으므로)
+  // fallback이 없을 때만 GPT가 읽은 값 사용
+  const year = fallbackYear || calendarResult?.data.year || analysisResult?.data.year;
+  const month = fallbackMonth || calendarResult?.data.month || analysisResult?.data.month;
 
   if (!year || !month) {
-    throw new Error('이미지에서 연도와 월을 읽을 수 없습니다.');
+    throw new Error('연도와 월을 확인할 수 없습니다. 업로드 페이지에서 월을 선택해주세요.');
   }
 
-  console.log('[MERGE] 최종 year/month:', { year, month, fromGPT: { calYear: calendarResult?.data.year, calMonth: calendarResult?.data.month, anaYear: analysisResult?.data.year, anaMonth: analysisResult?.data.month }, fallback: { fallbackYear, fallbackMonth } });
+  console.log('[MERGE] 최종 year/month:', { 
+    year, 
+    month, 
+    source: fallbackYear ? 'user-selected' : 'gpt-extracted',
+    fromGPT: { calYear: calendarResult?.data.year, calMonth: calendarResult?.data.month, anaYear: analysisResult?.data.year, anaMonth: analysisResult?.data.month }, 
+    fallback: { fallbackYear, fallbackMonth } 
+  });
 
   return {
     year,

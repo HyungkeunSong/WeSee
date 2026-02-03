@@ -86,6 +86,15 @@ export async function POST(request: NextRequest) {
     const imageUrls = images.map(img => img.url);
 
     // financial_records에 UPSERT
+    console.log('[PROCESS] DB 저장 시작:', {
+      user_id: user.id,
+      couple_id: coupleData.id,
+      year: analysisResult.year,
+      month: analysisResult.month,
+      dailyTransactionsCount: Object.keys(financialData.dailyTransactions || {}).length,
+      categoryAnalysisCount: Object.keys(financialData.categoryAnalysis || {}).length,
+    });
+
     const { data: recordData, error: recordError } = await supabase
       .from('financial_records')
       .upsert(
@@ -106,12 +115,18 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (recordError) {
-      console.error('DB 저장 오류:', recordError);
+      console.error('[PROCESS] DB 저장 오류:', recordError);
       return NextResponse.json(
-        { error: '데이터 저장에 실패했습니다.' },
+        { error: '데이터 저장에 실패했습니다.', details: recordError.message },
         { status: 500 }
       );
     }
+
+    console.log('[PROCESS] DB 저장 성공:', {
+      recordId: recordData.id,
+      year: analysisResult.year,
+      month: analysisResult.month,
+    });
 
     return NextResponse.json({
       success: true,

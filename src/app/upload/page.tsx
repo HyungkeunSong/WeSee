@@ -5,6 +5,7 @@ import { format, subMonths } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import { Upload, X, Calendar, PieChart, ChevronDown, Check, Loader2 } from 'lucide-react';
 import { compressImage, formatFileSize, type CompressedImage } from '@/lib/image-utils';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface ImageUploadSlotProps {
   title: string;
@@ -179,6 +180,7 @@ function ProcessStep({ step, currentStep, label, isError }: ProcessStepProps) {
 
 export default function UploadPage() {
   const today = new Date();
+  const queryClient = useQueryClient();
   
   // 초기값은 항상 today로 설정 (SSR/CSR 일치)
   const [selectedMonth, setSelectedMonth] = useState<Date>(today);
@@ -330,9 +332,17 @@ export default function UploadPage() {
       // 선택된 월을 localStorage에 저장
       localStorage.setItem('currentMonth', `${year}-${month}`);
       
-      // 홈 화면으로 이동
+      // React Query 캐시 무효화 - 해당 월과 전체 financial-records 캐시 모두
+      await queryClient.invalidateQueries({ 
+        queryKey: ['financial-records', year, month] 
+      });
+      await queryClient.invalidateQueries({ 
+        queryKey: ['financial-records'] 
+      });
+      
+      // 홈 화면으로 이동 (router.push 대신 location으로 하드 리로드)
       setTimeout(() => {
-        window.location.href = '/';
+        window.location.href = '/?refresh=' + Date.now();
       }, 1500);
 
     } catch (err) {

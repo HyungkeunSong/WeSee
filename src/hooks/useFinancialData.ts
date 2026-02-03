@@ -29,7 +29,15 @@ export interface FinancialRecordsResponse {
 }
 
 async function fetchFinancialData(year: number, month: number): Promise<FinancialRecordsResponse | null> {
-  const response = await fetch(`/api/financial-records?year=${year}&month=${month}`);
+  // 캐시 방지를 위해 timestamp 추가
+  const timestamp = Date.now();
+  const response = await fetch(`/api/financial-records?year=${year}&month=${month}&_t=${timestamp}`, {
+    cache: 'no-store',
+    headers: {
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      'Pragma': 'no-cache',
+    },
+  });
   
   if (response.status === 401) {
     window.location.href = '/login';
