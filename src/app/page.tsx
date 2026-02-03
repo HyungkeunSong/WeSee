@@ -11,7 +11,6 @@ import { CoupleInviteSheet } from "@/components/couple-invite-sheet";
 import { useFinancialData } from "@/hooks/useFinancialData";
 import { useProfile } from "@/hooks/useProfile";
 import { useQueryClient } from "@tanstack/react-query";
-import { useSearchParams } from "next/navigation";
 
 // 날짜별 수입/지출 데이터 타입
 interface DayData {
@@ -33,7 +32,6 @@ import type { FinancialRecordsResponse } from "@/hooks/useFinancialData";
 export default function Home() {
   const today = new Date();
   const queryClient = useQueryClient();
-  const searchParams = useSearchParams();
   
   // 초기값은 항상 today로 설정 (SSR/CSR 일치)
   const [currentDate, setCurrentDate] = useState<Date>(today);
@@ -63,7 +61,8 @@ export default function Home() {
   
   // 업로드 후 돌아왔을 때 캐시 무효화 (refresh 파라미터 감지)
   useEffect(() => {
-    const refreshParam = searchParams.get('refresh');
+    const urlParams = new URLSearchParams(window.location.search);
+    const refreshParam = urlParams.get('refresh');
     if (refreshParam) {
       // 모든 financial-records 캐시 무효화 후 다시 fetch
       queryClient.invalidateQueries({ queryKey: ['financial-records'] }).then(() => {
@@ -72,7 +71,7 @@ export default function Home() {
       // URL에서 refresh 파라미터 제거 (히스토리 깨끗하게 유지)
       window.history.replaceState({}, '', '/');
     }
-  }, [searchParams, queryClient, refetch]);
+  }, [queryClient, refetch]);
   
   // 프로필 데이터 미리 로드 (사이드 메뉴에서 즉시 표시하기 위함)
   useProfile();
